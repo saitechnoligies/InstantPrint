@@ -1,226 +1,3 @@
-// import React, { useMemo } from "react";
-// import { useLocation } from "react-router-dom";
-// import { Document, Page, pdfjs } from "react-pdf";
-// import { useForm, useWatch } from "react-hook-form";
-
-// import "react-pdf/dist/Page/TextLayer.css";
-// import "react-pdf/dist/Page/AnnotationLayer.css";
-
-// import worker from "pdfjs-dist/build/pdf.worker.min?url";
-
-// pdfjs.GlobalWorkerOptions.workerSrc = worker;
-
-// export default function OptionsPage() {
-//   const location = useLocation();
-//   const { file, orderId, numPages } = location.state || {};
-
-//   const { register, control } = useForm({
-//     defaultValues: {
-//       color: "bw",
-//       copies: 1,
-//       pagesType: "all",
-//       customPages: "",
-//     },
-//   });
-
-//   const color = useWatch({ control, name: "color" });
-//   const copies = useWatch({ control, name: "copies" });
-//   const pagesType = useWatch({ control, name: "pagesType" });
-//   const customPages = useWatch({ control, name: "customPages" });
-
-//   if (!file) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <p className="text-gray-500">
-//           No document loaded. Please upload a file first.
-//         </p>
-//       </div>
-//     );
-//   }
-
-//   // Parse custom page range
-//   const pageCount = useMemo(() => {
-//     if (pagesType === "all") return numPages;
-
-//     if (!customPages) return 0;
-
-//     let total = 0;
-
-//     const parts = customPages.split(",");
-
-//     parts.forEach((part) => {
-//       if (part.includes("-")) {
-//         const [start, end] = part.split("-").map(Number);
-
-//         if (!isNaN(start) && !isNaN(end) && end >= start) {
-//           total += end - start + 1;
-//         }
-//       } else {
-//         if (!isNaN(Number(part))) total += 1;
-//       }
-//     });
-
-//     return total;
-//   }, [pagesType, customPages, numPages]);
-
-//   // Price calculation
-//   const price = useMemo(() => {
-//     const perPage = color === "bw" ? 2 : 10;
-//     return pageCount * copies * perPage;
-//   }, [color, copies, pageCount]);
-
-//   return (
-//     <div className="min-h-screen bg-gray-100 flex justify-center py-10 px-4">
-//       <div className="w-full max-w-4xl space-y-6">
-
-//         {/* Document */}
-//         <div className="bg-white shadow-md rounded-xl p-6">
-//           <h2 className="text-xl font-semibold border-b pb-3 mb-4">
-//             Document
-//           </h2>
-
-//           <div className="space-y-1 text-gray-700">
-//             <p>
-//               <span className="font-medium">File:</span> {file.name}
-//             </p>
-
-//             <p>
-//               <span className="font-medium">Pages:</span> {numPages}
-//             </p>
-
-//             <p className="text-sm text-gray-400">
-//               Order ID: {orderId}
-//             </p>
-//           </div>
-
-//           <div className="mt-6">
-//             <h3 className="font-medium mb-2 text-gray-700">
-//               Preview
-//             </h3>
-
-//             <div
-//               className={`border rounded-lg bg-gray-50 flex justify-center py-6 transition ${
-//                 color === "bw" ? "grayscale" : ""
-//               }`}
-//             >
-//               <Document file={file}>
-//                 <Page
-//                   pageNumber={1}
-//                   width={350}
-//                   renderTextLayer={false}
-//                   renderAnnotationLayer={false}
-//                 />
-//               </Document>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Print Settings */}
-//         <div className="bg-white shadow-md rounded-xl p-6">
-//           <h2 className="text-xl font-semibold border-b pb-3 mb-6">
-//             Print Settings
-//           </h2>
-
-//           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-//             {/* Color */}
-//             <div>
-//               <p className="font-medium mb-2">Color</p>
-
-//               <div className="flex gap-4">
-//                 <label className="flex items-center gap-2">
-//                   <input
-//                     type="radio"
-//                     value="bw"
-//                     {...register("color")}
-//                   />
-//                   BW
-//                 </label>
-
-//                 <label className="flex items-center gap-2">
-//                   <input
-//                     type="radio"
-//                     value="color"
-//                     {...register("color")}
-//                   />
-//                   Color
-//                 </label>
-//               </div>
-//             </div>
-
-//             {/* Copies */}
-//             <div>
-//               <p className="font-medium mb-2">Copies</p>
-
-//               <input
-//                 type="number"
-//                 min={1}
-//                 {...register("copies", { valueAsNumber: true })}
-//                 className="border rounded-lg px-3 py-2 w-24"
-//               />
-//             </div>
-
-//             {/* Pages */}
-//             <div className="md:col-span-2">
-//               <p className="font-medium mb-2">Pages</p>
-
-//               <div className="flex items-center gap-6">
-
-//                 <label className="flex items-center gap-2">
-//                   <input
-//                     type="radio"
-//                     value="all"
-//                     {...register("pagesType")}
-//                   />
-//                   All
-//                 </label>
-
-//                 <label className="flex items-center gap-2">
-//                   <input
-//                     type="radio"
-//                     value="custom"
-//                     {...register("pagesType")}
-//                   />
-//                   Custom
-//                 </label>
-
-//                 <input
-//                   type="text"
-//                   placeholder="1-5,8,10"
-//                   {...register("customPages")}
-//                   className="border rounded-lg px-3 py-2 w-32"
-//                 />
-//               </div>
-//             </div>
-
-//           </div>
-//         </div>
-
-//         {/* Price Summary */}
-//         <div className="bg-white shadow-md rounded-xl p-6">
-//           <h2 className="text-xl font-semibold border-b pb-3 mb-4">
-//             Price Summary
-//           </h2>
-
-//           <div className="space-y-2 text-gray-700">
-//             <p>Pages: {pageCount}</p>
-//             <p>Copies: {copies}</p>
-
-//             <p className="text-lg font-semibold pt-2">
-//               Total: ₹{price}
-//             </p>
-//           </div>
-
-//           <button className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition">
-//             Continue to Payment
-//           </button>
-//         </div>
-
-//       </div>
-//     </div>
-//   );
-// }
-
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -447,209 +224,383 @@ export default function OptionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center py-10 px-4">
-      <div className="w-full max-w-5xl space-y-6">
-        {/* DOCUMENT */}
+    <div className="h-screen overflow-hidden bg-gray-100 p-4">
+      <div className="h-full max-w-7xl mx-auto flex gap-6">
+        {/* ================= LEFT ================= */}
+        <div className="w-1/2 flex flex-col gap-4 h-full">
+          {/* PREVIEW */}
+          <div className="bg-white rounded-xl shadow p-4 shrink-0">
+            <h2 className="text-md font-semibold mb-2">Preview</h2>
 
-        <div className="bg-white shadow-md rounded-xl p-6">
-          <h2 className="text-xl font-semibold border-b pb-3 mb-4">Document</h2>
-
-          <p>
-            <b>File:</b> {file.name}
-          </p>
-          <p>
-            <b>Pages:</b> {numPages}
-          </p>
-          <p className="text-sm text-gray-400">Order ID: {orderId}</p>
-
-          {/* Preview */}
-
-          <div className="mt-6">
             <div
-              className={`border rounded-lg bg-gray-50 flex justify-center py-6 ${
+              className={`border rounded-lg bg-gray-50 flex justify-center items-center p-4 ${
                 color === "bw" ? "grayscale" : ""
               }`}
             >
               <Document file={file}>
-                <Page pageNumber={1} width={350} />
+                <Page pageNumber={1} width={280} />
               </Document>
             </div>
+
+            <p className="text-xs text-gray-500 mt-2">
+              {file.name} • {numPages} pages
+            </p>
           </div>
 
-          {/* THUMBNAILS */}
-
+          {/* PAGE SELECTION (SCROLL ONLY HERE) */}
           {pagesType === "custom" && (
-            <div className="mt-8">
-              <h3 className="font-medium mb-3">Select Pages</h3>
+            <div className="bg-white rounded-xl shadow p-4 flex-1 overflow-hidden">
+              <h3 className="font-medium mb-2">Select Pages</h3>
 
-              <Document file={file}>
-                <div className="grid grid-cols-5 md:grid-cols-8 gap-3 max-h-72 overflow-y-auto">
-                  {Array.from({ length: numPages }, (_, i) => {
-                    const pageNumber = i + 1;
-                    const selected = selectedPages.includes(pageNumber);
+              <div className="h-full overflow-y-auto pr-2">
+                <Document file={file}>
+                  <div className="grid grid-cols-4 gap-2">
+                    {Array.from({ length: numPages }, (_, i) => {
+                      const pageNumber = i + 1;
+                      const selected = selectedPages.includes(pageNumber);
 
-                    return (
-                      <div
-                        key={pageNumber}
-                        onClick={() => togglePage(pageNumber)}
-                        className={`cursor-pointer border rounded-lg p-1
+                      return (
+                        <div
+                          key={pageNumber}
+                          onClick={() => togglePage(pageNumber)}
+                          className={`cursor-pointer border rounded p-1
                         ${
                           selected
-                            ? "border-blue-500 ring-2 ring-blue-400"
+                            ? "border-blue-500 ring-2 ring-blue-300"
                             : "border-gray-200"
                         }`}
-                      >
-                        <Page
-                          pageNumber={pageNumber}
-                          width={80}
-                          renderTextLayer={false}
-                          renderAnnotationLayer={false}
-                        />
-
-                        <p className="text-xs text-center">{pageNumber}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Document>
+                        >
+                          <Page
+                            pageNumber={pageNumber}
+                            width={70}
+                            renderTextLayer={false}
+                            renderAnnotationLayer={false}
+                          />
+                          <p className="text-[10px] text-center">
+                            {pageNumber}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Document>
+              </div>
             </div>
           )}
         </div>
-
-        {/* PRINT SETTINGS */}
-
-        <div className="bg-white shadow-md rounded-xl p-6">
-          <h2 className="text-xl font-semibold border-b pb-3 mb-6">
-            Print Settings
-          </h2>
-
-          <div className="grid grid-cols-2 gap-6">
-            {/* COLOR */}
-
-            <div>
-              <p className="font-medium mb-2">Color</p>
-
-              <label className="mr-4">
-                <input type="radio" value="bw" {...register("color")} />
-                BW
-              </label>
-
-              <label>
-                <input type="radio" value="color" {...register("color")} />
-                Color
-              </label>
+        {/* ================= RIGHT ================= */}
+        <div className="h-full">
+          <div className="h-full bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/50 p-6 flex flex-col">
+            {/* HEADER */}
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">
+                Print Settings
+              </h2>
+              <p className="text-xs text-gray-500">
+                Configure your preferences
+              </p>
             </div>
 
-            {/* SIDES */}
+            {/* GRID SETTINGS (MULTI-COLUMN) */}
+            <div className="grid grid-cols-2 gap-5 flex-1 content-start">
+              {/* COLOR */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-gray-500">COLOR</p>
+                <div className="flex bg-gray-100/70 p-1 rounded-xl shadow-inner">
+                  <label className="flex-1">
+                    <input
+                      type="radio"
+                      value="bw"
+                      {...register("color")}
+                      className="hidden peer"
+                    />
+                    <div className="text-center py-1.5 rounded-lg text-sm cursor-pointer peer-checked:bg-white peer-checked:shadow-md">
+                      BW
+                    </div>
+                  </label>
+                  <label className="flex-1">
+                    <input
+                      type="radio"
+                      value="color"
+                      {...register("color")}
+                      className="hidden peer"
+                    />
+                    <div className="text-center py-1.5 rounded-lg text-sm cursor-pointer peer-checked:bg-white peer-checked:shadow-md">
+                      Color
+                    </div>
+                  </label>
+                </div>
+              </div>
 
-            <div>
-              <p className="font-medium mb-2">Sides</p>
+              {/* SIDES */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-gray-500">SIDES</p>
+                <div className="flex bg-gray-100/70 p-1 rounded-xl shadow-inner">
+                  <label className="flex-1">
+                    <input
+                      type="radio"
+                      value="single"
+                      {...register("sides")}
+                      className="hidden peer"
+                    />
+                    <div className="text-center py-1.5 rounded-lg text-sm cursor-pointer peer-checked:bg-white peer-checked:shadow-md">
+                      Single
+                    </div>
+                  </label>
+                  <label className="flex-1">
+                    <input
+                      type="radio"
+                      value="double"
+                      {...register("sides")}
+                      className="hidden peer"
+                    />
+                    <div className="text-center py-1.5 rounded-lg text-sm cursor-pointer peer-checked:bg-white peer-checked:shadow-md">
+                      Double
+                    </div>
+                  </label>
+                </div>
+              </div>
 
-              <label className="mr-4">
-                <input type="radio" value="single" {...register("sides")} />
-                Single
-              </label>
+              {/* PAPER */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-gray-500">PAPER</p>
+                <div className="flex bg-gray-100/70 p-1 rounded-xl shadow-inner">
+                  <label className="flex-1">
+                    <input
+                      type="radio"
+                      value="A4"
+                      {...register("paperSize")}
+                      className="hidden peer"
+                    />
+                    <div className="text-center py-1.5 rounded-lg text-sm cursor-pointer peer-checked:bg-white peer-checked:shadow-md">
+                      A4
+                    </div>
+                  </label>
+                  <label className="flex-1">
+                    <input
+                      type="radio"
+                      value="Letter"
+                      {...register("paperSize")}
+                      className="hidden peer"
+                    />
+                    <div className="text-center py-1.5 rounded-lg text-sm cursor-pointer peer-checked:bg-white peer-checked:shadow-md">
+                      Letter
+                    </div>
+                  </label>
+                </div>
+              </div>
 
-              <label>
-                <input type="radio" value="double" {...register("sides")} />
-                Double
-              </label>
-            </div>
-
-            {/* PAPER SIZE */}
-
-            <div>
-              <p className="font-medium mb-2">Paper Size</p>
-
-              <label className="mr-4">
-                <input type="radio" value="A4" {...register("paperSize")} />
-                A4
-              </label>
-
-              <label>
-                <input type="radio" value="Letter" {...register("paperSize")} />
-                Letter
-              </label>
-            </div>
-
-            {/* COPIES */}
-
-            <div>
-              <p className="font-medium mb-2">Copies</p>
-
-              <input
-                type="number"
-                min={1}
-                {...register("copies", { valueAsNumber: true })}
-                onBlur={(e) => {
-                  if (!e.target.value || e.target.value < 1) {
-                    setValue("copies", 1);
-                  }
-                }}
-                className="border px-2 py-1 rounded"
-              />
-            </div>
-
-            {/* PAGE TYPE */}
-
-            <div className="col-span-2">
-              <p className="font-medium mb-2">Pages</p>
-
-              <label className="mr-4">
-                <input type="radio" value="all" {...register("pagesType")} />
-                All
-              </label>
-
-              <label>
-                <input type="radio" value="custom" {...register("pagesType")} />
-                Custom
-              </label>
-
-              {pagesType === "custom" && (
+              {/* COPIES */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-gray-500">COPIES</p>
                 <input
-                  type="text"
-                  placeholder="1-5,8"
-                  {...register("customPages")}
-                  className="border rounded px-2 py-1 ml-4"
+                  type="number"
+                  min={1}
+                  {...register("copies", { valueAsNumber: true })}
+                  className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
                 />
-              )}
+              </div>
 
-              {pageError && (
-                <p className="text-red-500 text-sm mt-2">{pageError}</p>
+              {/* PAGES (FULL WIDTH) */}
+              <div className="col-span-2 space-y-2">
+                <p className="text-xs font-semibold text-gray-500">PAGES</p>
+
+                <div className="flex bg-gray-100/70 p-1 rounded-xl shadow-inner w-fit">
+                  <label>
+                    <input
+                      type="radio"
+                      value="all"
+                      {...register("pagesType")}
+                      className="hidden peer"
+                    />
+                    <div className="px-4 py-1.5 rounded-lg text-sm cursor-pointer peer-checked:bg-white peer-checked:shadow-md">
+                      All
+                    </div>
+                  </label>
+
+                  <label>
+                    <input
+                      type="radio"
+                      value="custom"
+                      {...register("pagesType")}
+                      className="hidden peer"
+                    />
+                    <div className="px-4 py-1.5 rounded-lg text-sm cursor-pointer peer-checked:bg-white peer-checked:shadow-md">
+                      Custom
+                    </div>
+                  </label>
+                </div>
+
+                {pagesType === "custom" && (
+                  <input
+                    type="text"
+                    placeholder="1-5,8"
+                    {...register("customPages")}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                  />
+                )}
+
+                {pageError && (
+                  <p className="text-red-500 text-xs">{pageError}</p>
+                )}
+              </div>
+            </div>
+
+            {/* SUMMARY */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Pages</span>
+                <span>{pageCount}</span>
+              </div>
+
+              <div className="flex justify-between text-sm text-gray-600 mt-1">
+                <span>Copies</span>
+                <span>{copies}</span>
+              </div>
+
+              <div className="flex justify-between items-center mt-3">
+                <span className="text-sm text-gray-500">Total</span>
+                <span className="text-2xl font-bold text-blue-600">
+                  ₹{price}
+                </span>
+              </div>
+
+              <button
+                onClick={handleContinue}
+                disabled={pageError || pageCount === 0 || loading}
+                className={`mt-4 w-full py-3 rounded-xl font-semibold text-white transition-all
+              ${
+                pageError || pageCount === 0
+                  ? "bg-gray-400"
+                  : "bg-linear-to-r from-blue-600 to-indigo-600 hover:opacity-95 active:scale-[0.98] shadow-lg"
+              }`}
+              >
+                {loading ? "Processing..." : "Continue →"}
+              </button>
+              {apiError && (
+                <p className="text-red-500 text-xs mt-2">{apiError}</p>
               )}
             </div>
           </div>
-        </div>
-
-        {/* PRICE */}
-
-        <div className="bg-white shadow-md rounded-xl p-6">
-          <h2 className="text-xl font-semibold border-b pb-3 mb-4">
-            Price Summary
-          </h2>
-
-          <p>Pages: {pageCount}</p>
-          <p>Copies: {copies}</p>
-          <p>Mode: {color === "bw" ? "BW" : "Color"}</p>
-
-          <p className="text-lg font-semibold mt-2">Total: ₹{price}</p>
-
-          <button
-            onClick={handleContinue}
-            disabled={pageError || pageCount === 0 || loading}
-            className={`mt-6 w-full py-3 rounded-lg text-white
-            ${
-              pageError || pageCount === 0
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {loading ? "Saving..." : "Continue to Payment"}
-          </button>
-
-          {apiError && <p className="text-red-500 text-sm mt-2">{apiError}</p>}
         </div>
       </div>
     </div>
   );
 }
+
+// {/* ================= RIGHT ================= */}
+//         <div className="w-1/2 flex flex-col gap-4 h-full">
+//           {/* SETTINGS */}
+//           <div className="bg-white rounded-xl shadow p-5 flex-1 overflow-y-auto">
+//             <h2 className="text-md font-semibold mb-4">Print Settings</h2>
+
+//             <div className="space-y-5 text-sm">
+//               <div>
+//                 <p className="font-medium mb-1">Color</p>
+//                 <label className="mr-4">
+//                   <input type="radio" value="bw" {...register("color")} /> BW
+//                 </label>
+//                 <label>
+//                   <input type="radio" value="color" {...register("color")} />{" "}
+//                   Color
+//                 </label>
+//               </div>
+
+//               <div>
+//                 <p className="font-medium mb-1">Sides</p>
+//                 <label className="mr-4">
+//                   <input type="radio" value="single" {...register("sides")} />{" "}
+//                   Single
+//                 </label>
+//                 <label>
+//                   <input type="radio" value="double" {...register("sides")} />{" "}
+//                   Double
+//                 </label>
+//               </div>
+
+//               <div>
+//                 <p className="font-medium mb-1">Paper</p>
+//                 <label className="mr-4">
+//                   <input type="radio" value="A4" {...register("paperSize")} />{" "}
+//                   A4
+//                 </label>
+//                 <label>
+//                   <input
+//                     type="radio"
+//                     value="Letter"
+//                     {...register("paperSize")}
+//                   />{" "}
+//                   Letter
+//                 </label>
+//               </div>
+
+//               <div>
+//                 <p className="font-medium mb-1">Copies</p>
+//                 <input
+//                   type="number"
+//                   min={1}
+//                   {...register("copies", { valueAsNumber: true })}
+//                   className="border px-2 py-1 rounded w-20"
+//                 />
+//               </div>
+
+//               <div>
+//                 <p className="font-medium mb-1">Pages</p>
+
+//                 <label className="mr-4">
+//                   <input type="radio" value="all" {...register("pagesType")} />{" "}
+//                   All
+//                 </label>
+
+//                 <label>
+//                   <input
+//                     type="radio"
+//                     value="custom"
+//                     {...register("pagesType")}
+//                   />{" "}
+//                   Custom
+//                 </label>
+
+//                 {pagesType === "custom" && (
+//                   <input
+//                     type="text"
+//                     placeholder="1-5,8"
+//                     {...register("customPages")}
+//                     className="border ml-3 px-2 py-1 rounded"
+//                   />
+//                 )}
+
+//                 {pageError && (
+//                   <p className="text-red-500 text-xs mt-1">{pageError}</p>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* PRICE (FIXED HEIGHT) */}
+//           <div className="bg-white rounded-xl shadow p-5 flex-shrink-0">
+//             <h2 className="text-md font-semibold mb-2">Summary</h2>
+
+//             <p className="text-sm">Pages: {pageCount}</p>
+//             <p className="text-sm">Copies: {copies}</p>
+
+//             <p className="text-lg font-bold mt-2">₹{price}</p>
+
+//             <button
+//               onClick={handleContinue}
+//               disabled={pageError || pageCount === 0 || loading}
+//               className={`mt-4 w-full py-2 rounded text-white
+//             ${
+//               pageError || pageCount === 0
+//                 ? "bg-gray-400"
+//                 : "bg-blue-600 hover:bg-blue-700"
+//             }`}
+//             >
+//               {loading ? "Saving..." : "Continue"}
+//             </button>
+
+//             {apiError && (
+//               <p className="text-red-500 text-xs mt-2">{apiError}</p>
+//             )}
+//           </div>
+//         </div>
