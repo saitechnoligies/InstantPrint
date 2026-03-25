@@ -1,466 +1,1082 @@
+// // // // import React, { useState } from "react";
+// // // // import { Document, Page, pdfjs } from "react-pdf";
+// // // // import "react-pdf/dist/Page/TextLayer.css";
+// // // // import "react-pdf/dist/Page/AnnotationLayer.css";
+
+// // // // import worker from "pdfjs-dist/build/pdf.worker.min?url";
+
+// // // // pdfjs.GlobalWorkerOptions.workerSrc = worker;
+
+// // // // function UploadPage() {
+// // // //   const [file, setFile] = useState(null);
+// // // //   const [numPages, setNumPages] = useState(null);
+
+// // // //   const handleFileChange = (e) => {
+// // // //     const selectedFile = e.target.files[0];
+
+// // // //     if (selectedFile && selectedFile.type === "application/pdf") {
+// // // //       setFile(selectedFile);
+// // // //     } else {
+// // // //       alert("Please upload a PDF file");
+// // // //     }
+// // // //   };
+
+// // // //   const onDocumentLoadSuccess = ({ numPages }) => {
+// // // //     setNumPages(numPages);
+// // // //   };
+
+// // // //   return (
+// // // //     <div>
+// // // //       <h2>Upload PDF</h2>
+
+// // // //       <input type="file" accept="application/pdf" onChange={handleFileChange} />
+
+// // // //       {file && (
+// // // //         <>
+// // // //           <p>File: {file.name}</p>
+
+// // // //           <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
+// // // //             <Page
+// // // //               pageNumber={1}
+// // // //               width={400}
+// // // //               renderTextLayer={false}
+// // // //               renderAnnotationLayer={false}
+// // // //             />
+// // // //           </Document>
+
+// // // //           {numPages && <p>Total Pages: {numPages}</p>}
+// // // //         </>
+// // // //       )}
+// // // //     </div>
+// // // //   );
+// // // // }
+
+// // // // export default UploadPage;
+
+// // // import React, { useState } from "react";
+// // // import { Document, Page, pdfjs } from "react-pdf";
+// // // import "react-pdf/dist/Page/TextLayer.css";
+// // // import "react-pdf/dist/Page/AnnotationLayer.css";
+
+// // // import worker from "pdfjs-dist/build/pdf.worker.min?url";
+
+// // // pdfjs.GlobalWorkerOptions.workerSrc = worker;
+
+// // // function UploadPage() {
+// // //   const [file, setFile] = useState(null);
+// // //   const [numPages, setNumPages] = useState(null);
+// // //   const [orderId, setOrderId] = useState(null);
+
+// // //   const handleFileChange = (e) => {
+// // //     const selectedFile = e.target.files[0];
+
+// // //     if (selectedFile && selectedFile.type === "application/pdf") {
+// // //       setFile(selectedFile);
+// // //     } else {
+// // //       alert("Please upload a PDF file");
+// // //     }
+// // //   };
+
+// // //   const onDocumentLoadSuccess = ({ numPages }) => {
+// // //     setNumPages(numPages);
+// // //   };
+
+// // //   const uploadFile = async () => {
+// // //     if (!file || !numPages) {
+// // //       alert("Select file first");
+// // //       return;
+// // //     }
+
+// // //     try {
+// // //       /* STEP 1: Create order */
+// // //       const orderRes = await fetch("http://localhost:3000/api/orders", {
+// // //         method: "POST",
+// // //       });
+
+// // //       if (!orderRes.ok) {
+// // //         throw new Error("Failed to create order");
+// // //       }
+
+// // //       const orderData = await orderRes.json();
+// // //       const orderId = orderData.orderId;
+
+// // //       setOrderId(orderId);
+
+// // //       /* STEP 2: Get upload URL */
+// // //       const uploadUrlRes = await fetch(
+// // //         `http://localhost:3000/api/orders/${orderId}/upload-url`,
+// // //         {
+// // //           method: "POST",
+// // //         },
+// // //       );
+
+// // //       const uploadData = await uploadUrlRes.json();
+
+// // //       const { uploadUrl, storageKey } = uploadData;
+
+// // //       /* STEP 3: Upload to MinIO/S3 */
+// // //       await fetch(uploadUrl, {
+// // //         method: "PUT",
+// // //         body: file,
+// // //         headers: {
+// // //           "Content-Type": "application/pdf",
+// // //         },
+// // //       });
+
+// // //       /* STEP 4: Confirm upload */
+// // //       await fetch(`http://localhost:3000/api/orders/${orderId}/file`, {
+// // //         method: "POST",
+// // //         headers: {
+// // //           "Content-Type": "application/json",
+// // //         },
+// // //         body: JSON.stringify({
+// // //           storageKey,
+// // //           fileName: file.name,
+// // //           fileSize: file.size,
+// // //           pageCount: numPages,
+// // //           mimeType: file.type,
+// // //         }),
+// // //       });
+
+// // //       alert("Upload successful!");
+// // //     } catch (err) {
+// // //       console.error(err);
+// // //       alert("Upload failed");
+// // //     }
+// // //   };
+
+// // //   return (
+// // //     <div>
+// // //       <h2>Upload PDF</h2>
+
+// // //       <input type="file" accept="application/pdf" onChange={handleFileChange} />
+
+// // //       {file && (
+// // //         <>
+// // //           <p>File: {file.name}</p>
+
+// // //           <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
+// // //             <Page
+// // //               pageNumber={1}
+// // //               width={400}
+// // //               renderTextLayer={false}
+// // //               renderAnnotationLayer={false}
+// // //             />
+// // //           </Document>
+
+// // //           {numPages && <p>Total Pages: {numPages}</p>}
+
+// // //           <button onClick={uploadFile}>Upload</button>
+// // //         </>
+// // //       )}
+
+// // //       {orderId && <p>Order ID: {orderId}</p>}
+// // //     </div>
+// // //   );
+// // // }
+
+// // // export default UploadPage;
+
+// // // import React, { useState } from "react";
+// // // import { Document, Page, pdfjs } from "react-pdf";
+// // // import "react-pdf/dist/Page/TextLayer.css";
+// // // import "react-pdf/dist/Page/AnnotationLayer.css";
+
+// // // import worker from "pdfjs-dist/build/pdf.worker.min?url";
+
+// // // pdfjs.GlobalWorkerOptions.workerSrc = worker;
+
+// // // function UploadPage() {
+// // //   const [file, setFile] = useState(null);
+// // //   const [numPages, setNumPages] = useState(null);
+// // //   const [orderId, setOrderId] = useState(null);
+
+// // //   const handleFileChange = (e) => {
+// // //     const selectedFile = e.target.files[0];
+
+// // //     if (selectedFile && selectedFile.type === "application/pdf") {
+// // //       setFile(selectedFile);
+// // //     } else {
+// // //       alert("Please upload a PDF file");
+// // //     }
+// // //   };
+
+// // //   const removeFile = () => {
+// // //     setFile(null);
+// // //     setNumPages(null);
+// // //     setOrderId(null);
+// // //   };
+
+// // //   const onDocumentLoadSuccess = ({ numPages }) => {
+// // //     setNumPages(numPages);
+// // //   };
+
+// // //   const uploadFile = async () => {
+// // //     if (!file || !numPages) {
+// // //       alert("Select file first");
+// // //       return;
+// // //     }
+
+// // //     try {
+// // //       const orderRes = await fetch("http://localhost:3000/api/orders", {
+// // //         method: "POST",
+// // //       });
+
+// // //       if (!orderRes.ok) {
+// // //         throw new Error("Failed to create order");
+// // //       }
+
+// // //       const orderData = await orderRes.json();
+// // //       const orderId = orderData.orderId;
+
+// // //       setOrderId(orderId);
+
+// // //       const uploadUrlRes = await fetch(
+// // //         `http://localhost:3000/api/orders/${orderId}/upload-url`,
+// // //         { method: "POST" }
+// // //       );
+
+// // //       const uploadData = await uploadUrlRes.json();
+// // //       const { uploadUrl, storageKey } = uploadData;
+
+// // //       await fetch(uploadUrl, {
+// // //         method: "PUT",
+// // //         body: file,
+// // //         headers: {
+// // //           "Content-Type": "application/pdf",
+// // //         },
+// // //       });
+
+// // //       await fetch(`http://localhost:3000/api/orders/${orderId}/file`, {
+// // //         method: "POST",
+// // //         headers: {
+// // //           "Content-Type": "application/json",
+// // //         },
+// // //         body: JSON.stringify({
+// // //           storageKey,
+// // //           fileName: file.name,
+// // //           fileSize: file.size,
+// // //           pageCount: numPages,
+// // //           mimeType: file.type,
+// // //         }),
+// // //       });
+
+// // //       alert("Upload successful!");
+// // //     } catch (err) {
+// // //       console.error(err);
+// // //       alert("Upload failed");
+// // //     }
+// // //   };
+
+// // //   return (
+// // //     <div style={styles.container}>
+// // //       <h2 style={styles.title}>Upload PDF</h2>
+
+// // //       {!file && (
+// // //         <input
+// // //           type="file"
+// // //           accept="application/pdf"
+// // //           onChange={handleFileChange}
+// // //           style={styles.input}
+// // //         />
+// // //       )}
+
+// // //       {file && (
+// // //         <div style={styles.previewBox}>
+// // //           <p style={styles.fileName}>📄 {file.name}</p>
+
+// // //           <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
+// // //             <Page
+// // //               pageNumber={1}
+// // //               width={350}
+// // //               renderTextLayer={false}
+// // //               renderAnnotationLayer={false}
+// // //             />
+// // //           </Document>
+
+// // //           {numPages && <p>Total Pages: {numPages}</p>}
+
+// // //           <div style={styles.buttonRow}>
+// // //             <button style={styles.uploadBtn} onClick={uploadFile}>
+// // //               Upload
+// // //             </button>
+
+// // //             <button style={styles.removeBtn} onClick={removeFile}>
+// // //               Remove
+// // //             </button>
+// // //           </div>
+// // //         </div>
+// // //       )}
+
+// // //       {orderId && <p style={styles.order}>Order ID: {orderId}</p>}
+// // //     </div>
+// // //   );
+// // // }
+
+// // // const styles = {
+// // //   container: {
+// // //     maxWidth: "500px",
+// // //     margin: "40px auto",
+// // //     padding: "25px",
+// // //     border: "1px solid #ddd",
+// // //     borderRadius: "10px",
+// // //     textAlign: "center",
+// // //     fontFamily: "Arial",
+// // //   },
+// // //   title: {
+// // //     marginBottom: "20px",
+// // //   },
+// // //   input: {
+// // //     marginBottom: "20px",
+// // //   },
+// // //   previewBox: {
+// // //     border: "1px solid #eee",
+// // //     padding: "15px",
+// // //     borderRadius: "8px",
+// // //     background: "#fafafa",
+// // //   },
+// // //   fileName: {
+// // //     fontWeight: "bold",
+// // //     marginBottom: "10px",
+// // //   },
+// // //   buttonRow: {
+// // //     marginTop: "15px",
+// // //     display: "flex",
+// // //     justifyContent: "center",
+// // //     gap: "10px",
+// // //   },
+// // //   uploadBtn: {
+// // //     background: "#4CAF50",
+// // //     color: "white",
+// // //     border: "none",
+// // //     padding: "10px 18px",
+// // //     borderRadius: "6px",
+// // //     cursor: "pointer",
+// // //   },
+// // //   removeBtn: {
+// // //     background: "#f44336",
+// // //     color: "white",
+// // //     border: "none",
+// // //     padding: "10px 18px",
+// // //     borderRadius: "6px",
+// // //     cursor: "pointer",
+// // //   },
+// // //   order: {
+// // //     marginTop: "15px",
+// // //     fontWeight: "bold",
+// // //   },
+// // // };
+
+// // // export default UploadPage;
+
+// // import React, { useState } from "react";
+// // import { Document, Page, pdfjs } from "react-pdf";
+// // import { useNavigate } from "react-router-dom";
+// // import "react-pdf/dist/Page/TextLayer.css";
+// // import "react-pdf/dist/Page/AnnotationLayer.css";
+
+// // import worker from "pdfjs-dist/build/pdf.worker.min?url";
+
+// // pdfjs.GlobalWorkerOptions.workerSrc = worker;
+
+// // function UploadPage() {
+// //   const [file, setFile] = useState(null);
+// //   const [numPages, setNumPages] = useState(null);
+// //   const [orderId, setOrderId] = useState(null);
+
+// //   const navigate = useNavigate();
+
+// //   const handleFileChange = (e) => {
+// //     const selectedFile = e.target.files[0];
+
+// //     if (selectedFile && selectedFile.type === "application/pdf") {
+// //       setFile(selectedFile);
+// //     } else {
+// //       alert("Please upload a PDF file");
+// //     }
+// //   };
+
+// //   const removeFile = () => {
+// //     setFile(null);
+// //     setNumPages(null);
+// //     setOrderId(null);
+// //   };
+
+// //   const onDocumentLoadSuccess = ({ numPages }) => {
+// //     setNumPages(numPages);
+// //   };
+
+// //   const uploadFile = async () => {
+// //     if (!file || !numPages) {
+// //       alert("Select file first");
+// //       return;
+// //     }
+
+// //     try {
+// //       const orderRes = await fetch("http://localhost:3000/api/orders", {
+// //         method: "POST",
+// //       });
+
+// //       if (!orderRes.ok) {
+// //         throw new Error("Failed to create order");
+// //       }
+
+// //       const orderData = await orderRes.json();
+// //       const createdOrderId = orderData.orderId;
+
+// //       setOrderId(createdOrderId);
+
+// //       const uploadUrlRes = await fetch(
+// //         `http://localhost:3000/api/orders/${createdOrderId}/upload-url`,
+// //         { method: "POST" }
+// //       );
+
+// //       const uploadData = await uploadUrlRes.json();
+// //       const { uploadUrl, storageKey } = uploadData;
+
+// //       await fetch(uploadUrl, {
+// //         method: "PUT",
+// //         body: file,
+// //         headers: {
+// //           "Content-Type": "application/pdf",
+// //         },
+// //       });
+
+// //       await fetch(`http://localhost:3000/api/orders/${createdOrderId}/file`, {
+// //         method: "POST",
+// //         headers: {
+// //           "Content-Type": "application/json",
+// //         },
+// //         body: JSON.stringify({
+// //           storageKey,
+// //           fileName: file.name,
+// //           fileSize: file.size,
+// //           pageCount: numPages,
+// //           mimeType: file.type,
+// //         }),
+// //       });
+
+// //       // Navigate to options page with data
+// //       navigate("/options", {
+// //         state: {
+// //           file,
+// //           orderId: createdOrderId,
+// //           numPages,
+// //         },
+// //       });
+
+// //     } catch (err) {
+// //       console.error(err);
+// //       alert("Upload failed");
+// //     }
+// //   };
+
+// //   return (
+// //     <div style={styles.container}>
+// //       <h2 style={styles.title}>Upload PDF</h2>
+
+// //       {!file && (
+// //         <input
+// //           type="file"
+// //           accept="application/pdf"
+// //           onChange={handleFileChange}
+// //           style={styles.input}
+// //         />
+// //       )}
+
+// //       {file && (
+// //         <div style={styles.previewBox}>
+// //           <p style={styles.fileName}>📄 {file.name}</p>
+
+// //           <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
+// //             <Page
+// //               pageNumber={1}
+// //               width={350}
+// //               renderTextLayer={false}
+// //               renderAnnotationLayer={false}
+// //             />
+// //           </Document>
+
+// //           {numPages && <p>Total Pages: {numPages}</p>}
+
+// //           <div style={styles.buttonRow}>
+// //             <button style={styles.uploadBtn} onClick={uploadFile}>
+// //               Upload
+// //             </button>
+
+// //             <button style={styles.removeBtn} onClick={removeFile}>
+// //               Remove
+// //             </button>
+// //           </div>
+// //         </div>
+// //       )}
+
+// //       {orderId && <p style={styles.order}>Order ID: {orderId}</p>}
+// //     </div>
+// //   );
+// // }
+
+// // const styles = {
+// //   container: {
+// //     maxWidth: "500px",
+// //     margin: "40px auto",
+// //     padding: "25px",
+// //     border: "1px solid #ddd",
+// //     borderRadius: "10px",
+// //     textAlign: "center",
+// //     fontFamily: "Arial",
+// //   },
+// //   title: {
+// //     marginBottom: "20px",
+// //   },
+// //   input: {
+// //     marginBottom: "20px",
+// //   },
+// //   previewBox: {
+// //     border: "1px solid #eee",
+// //     padding: "15px",
+// //     borderRadius: "8px",
+// //     background: "#fafafa",
+// //   },
+// //   fileName: {
+// //     fontWeight: "bold",
+// //     marginBottom: "10px",
+// //   },
+// //   buttonRow: {
+// //     marginTop: "15px",
+// //     display: "flex",
+// //     justifyContent: "center",
+// //     gap: "10px",
+// //   },
+// //   uploadBtn: {
+// //     background: "#4CAF50",
+// //     color: "white",
+// //     border: "none",
+// //     padding: "10px 18px",
+// //     borderRadius: "6px",
+// //     cursor: "pointer",
+// //   },
+// //   removeBtn: {
+// //     background: "#f44336",
+// //     color: "white",
+// //     border: "none",
+// //     padding: "10px 18px",
+// //     borderRadius: "6px",
+// //     cursor: "pointer",
+// //   },
+// //   order: {
+// //     marginTop: "15px",
+// //     fontWeight: "bold",
+// //   },
+// // };
+
+// // export default UploadPage;
+
+// import { useState, useRef, useCallback } from "react";
+// import * as pdfjsLib from "pdfjs-dist";
+// import pdfWorker from "pdfjs-dist/build/pdf.worker.min?url";
+// import { useNavigate } from "react-router-dom";
+
+// pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
+// export default function UploadPage() {
+//   const [dragging, setDragging] = useState(false);
+//   const [file, setFile] = useState(null);
+//   const [pageCount, setPageCount] = useState(null);
+//   const [orderId, setOrderId] = useState(null);
+
+//   const inputRef = useRef();
+//   const navigate = useNavigate();
+
+//   // 📄 Handle file + extract pages
+//   const handleFile = async (f) => {
+//     if (!f || f.type !== "application/pdf") {
+//       alert("Only PDF allowed");
+//       return;
+//     }
+
+//     try {
+//       const arrayBuffer = await f.arrayBuffer();
+//       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+//       setFile(f);
+//       setPageCount(pdf.numPages);
+//     } catch (err) {
+//       console.error("PDF read error:", err);
+//     }
+//   };
+
+//   // 🎯 Drag & drop
+//   const onDrop = useCallback((e) => {
+//     e.preventDefault();
+//     setDragging(false);
+//     handleFile(e.dataTransfer.files[0]);
+//   }, []);
+
+//   const onDragOver = (e) => {
+//     e.preventDefault();
+//     setDragging(true);
+//   };
+
+//   const onDragLeave = () => setDragging(false);
+
+//   // ❌ Remove file
+//   const removeFile = () => {
+//     setFile(null);
+//     setPageCount(null);
+//     setOrderId(null);
+//   };
+
+//   // 🚀 Upload logic (from first code)
+//   const uploadFile = async () => {
+//     if (!file || !pageCount) {
+//       alert("Select file first");
+//       return;
+//     }
+
+//     try {
+//       // 1️⃣ Create order
+//       const orderRes = await fetch("http://localhost:3000/api/orders", {
+//         method: "POST",
+//       });
+
+//       if (!orderRes.ok) throw new Error("Order creation failed");
+
+//       const orderData = await orderRes.json();
+//       const createdOrderId = orderData.orderId;
+//       setOrderId(createdOrderId);
+
+//       // 2️⃣ Get upload URL
+//       const uploadUrlRes = await fetch(
+//         `http://localhost:3000/api/orders/${createdOrderId}/upload-url`,
+//         { method: "POST" },
+//       );
+
+//       const { uploadUrl, storageKey } = await uploadUrlRes.json();
+
+//       // 3️⃣ Upload file to storage (S3 etc.)
+//       await fetch(uploadUrl, {
+//         method: "PUT",
+//         body: file,
+//         headers: {
+//           "Content-Type": "application/pdf",
+//         },
+//       });
+
+//       // 4️⃣ Save metadata
+//       await fetch(`http://localhost:3000/api/orders/${createdOrderId}/file`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({
+//           storageKey,
+//           fileName: file.name,
+//           fileSize: file.size,
+//           pageCount,
+//           mimeType: file.type,
+//         }),
+//       });
+
+//       // 5️⃣ Navigate
+//       navigate("/options", {
+//         state: {
+//           file,
+//           orderId: createdOrderId,
+//           numPages: pageCount,
+//         },
+//       });
+//     } catch (err) {
+//       console.error(err);
+//       alert("Upload failed");
+//     }
+//   };
+
+//   return (
+//     <>
+//       {/* KEEP YOUR EXISTING CSS FROM SECOND FILE HERE (unchanged) */}
+//       <style>{`
+// @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Outfit:wght@300;400;500;600&display=swap');
+
+// .upload-root {
+//   min-height: 100vh;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   padding: 74px 1.25rem;
+//   background: #f0ede8;
+//   font-family: 'Outfit', sans-serif;
+// }
+
+// .card {
+//   background: #fff;
+//   border-radius: 24px;
+//   padding: 1.75rem 2rem;
+//   width: 100%;
+//   max-width: 440px;
+//   box-shadow: 0 16px 40px rgba(0,0,0,0.07);
+// }
+
+// .headline {
+//   font-family: 'Playfair Display', serif;
+//   font-size: 1.6rem;
+//   margin-bottom: 1rem;
+// }
+
+// .drop-zone {
+//   border-radius: 14px;
+//   border: 2px dashed #cbd5e1;
+//   background: #f8fafc;
+//   padding: 1.5rem;
+//   text-align: center;
+//   cursor: pointer;
+//   transition: 0.2s;
+// }
+
+// .drop-zone.dragging {
+//   border-color: #2563eb;
+//   background: #eff6ff;
+// }
+
+// .drop-zone.has-file {
+//   border-style: solid;
+//   border-color: #6ee7b7;
+//   background: #f0fdf4;
+// }
+
+// .drop-label {
+//   font-weight: 600;
+//   color: #1e293b;
+// }
+
+// .drop-hint {
+//   font-size: 0.75rem;
+//   color: #94a3b8;
+// }
+
+// .file-name {
+//   font-weight: 600;
+//   margin-bottom: 6px;
+// }
+
+// .file-meta {
+//   display: flex;
+//   justify-content: center;
+//   gap: 8px;
+//   font-size: 0.75rem;
+// }
+
+// .file-meta-tag {
+//   background: #f1f5f9;
+//   border-radius: 100px;
+//   padding: 3px 10px;
+// }
+
+// .remove-btn {
+//   margin-top: 8px;
+//   background: none;
+//   border: none;
+//   font-size: 0.75rem;
+//   color: #ef4444;
+//   cursor: pointer;
+// }
+
+// .cta-btn {
+//   margin-top: 1rem;
+//   width: 100%;
+//   padding: 0.8rem;
+//   border-radius: 12px;
+//   border: none;
+//   font-weight: 600;
+//   cursor: pointer;
+// }
+
+// .cta-btn.enabled {
+//   background: #2563eb;
+//   color: white;
+// }
+
+// .cta-btn.disabled {
+//   background: #e5e7eb;
+//   color: #9ca3af;
+//   cursor: not-allowed;
+// }
+// `}</style>
+
+//       <div className="upload-root">
+//         <div className="card">
+//           <h1 className="headline">Upload your PDF</h1>
+
+//           <div
+//             className={`drop-zone${dragging ? " dragging" : ""}${
+//               file ? " has-file" : ""
+//             }`}
+//             onClick={() => !file && inputRef.current.click()}
+//             onDrop={onDrop}
+//             onDragOver={onDragOver}
+//             onDragLeave={onDragLeave}
+//           >
+//             <input
+//               ref={inputRef}
+//               type="file"
+//               accept="application/pdf"
+//               style={{ display: "none" }}
+//               onChange={(e) => handleFile(e.target.files[0])}
+//             />
+
+//             {!file ? (
+//               <>
+//                 <p className="drop-label">
+//                   {dragging ? "Release to upload" : "Drop your PDF here"}
+//                 </p>
+//                 <p className="drop-hint">or click to browse</p>
+//               </>
+//             ) : (
+//               <>
+//                 <p className="file-name">{file.name}</p>
+
+//                 <div className="file-meta">
+//                   <span className="file-meta-tag">PDF</span>
+//                   <span className="file-meta-tag">{pageCount} pages</span>
+//                 </div>
+
+//                 <button
+//                   className="remove-btn"
+//                   onClick={(e) => {
+//                     e.stopPropagation();
+//                     removeFile();
+//                   }}
+//                 >
+//                   × Remove file
+//                 </button>
+//               </>
+//             )}
+//           </div>
+
+//           {/* 🔥 Upload Button replaces onContinue */}
+//           <button
+//             className={`cta-btn ${file ? "enabled" : "disabled"}`}
+//             disabled={!file}
+//             onClick={uploadFile}
+//           >
+//             Upload & Continue
+//           </button>
+
+//           {orderId && (
+//             <p style={{ marginTop: "10px", fontWeight: "bold" }}>
+//               Order ID: {orderId}
+//             </p>
+//           )}
+//         </div>
+//       </div>
+//     </>
+//   );
+// }
+
 import { useState, useRef, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min?url";
+import { useNavigate } from "react-router-dom";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-export default function UploadPage({ onContinue }) {
-  const [dragging, setDragging] = useState(false);
+export default function UploadPage() {
   const [file, setFile] = useState(null);
   const [pageCount, setPageCount] = useState(null);
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState("");
+
   const inputRef = useRef();
+  const navigate = useNavigate();
 
-  
-
-
+  // 📄 Read PDF
   const handleFile = async (f) => {
-  if (!f || f.type !== "application/pdf") return;
+    if (!f || f.type !== "application/pdf") {
+      setError("Only PDF files are allowed");
+      return;
+    }
 
-  try {
-    const arrayBuffer = await f.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const numPages = pdf.numPages;
+    try {
+      const buffer = await f.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
 
-    setFile(f);
-    setPageCount(numPages);
-  } catch (err) {
-    console.error("Error reading PDF:", err);
-  }
-};
+      setFile(f);
+      setPageCount(pdf.numPages);
+      setError("");
+    } catch (err) {
+      setError("Failed to read PDF");
+    }
+  };
 
+  // Drag
   const onDrop = useCallback((e) => {
     e.preventDefault();
     setDragging(false);
     handleFile(e.dataTransfer.files[0]);
   }, []);
 
-  const onDragOver = (e) => { e.preventDefault(); setDragging(true); };
+  const onDragOver = (e) => {
+    e.preventDefault();
+    setDragging(true);
+  };
+
   const onDragLeave = () => setDragging(false);
 
+  const removeFile = () => {
+    setFile(null);
+    setPageCount(null);
+    setProgress(0);
+  };
+
+  // 🚀 Upload with progress
+  const uploadFile = async () => {
+    if (!file) return;
+
+    setUploading(true);
+    setProgress(10);
+    setError("");
+
+    try {
+      // 1️⃣ Create order
+      const orderRes = await fetch("http://localhost:3000/api/orders", {
+        method: "POST",
+      });
+      const { orderId } = await orderRes.json();
+
+      setProgress(30);
+
+      // 2️⃣ Get upload URL
+      const uploadUrlRes = await fetch(
+        `http://localhost:3000/api/orders/${orderId}/upload-url`,
+        { method: "POST" },
+      );
+
+      const { uploadUrl, storageKey } = await uploadUrlRes.json();
+
+      setProgress(50);
+
+      // 3️⃣ Upload file (simulate progress chunks)
+      await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": "application/pdf" },
+      });
+
+      setProgress(80);
+
+      // 4️⃣ Save metadata
+      await fetch(`http://localhost:3000/api/orders/${orderId}/file`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storageKey,
+          fileName: file.name,
+          fileSize: file.size,
+          pageCount,
+          mimeType: file.type,
+        }),
+      });
+
+      setProgress(100);
+
+      // 5️⃣ Navigate
+      setTimeout(() => {
+        navigate("/options", {
+          state: { file, orderId, numPages: pageCount },
+        });
+      }, 500);
+    } catch (err) {
+      console.error(err);
+      setError("Upload failed. Try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Outfit:wght@300;400;500;600&display=swap');
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md">
+        <h1 className="text-2xl font-semibold mb-4">Upload your PDF</h1>
 
-        .upload-root {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 74px 1.25rem 1.25rem;
-          background: #f0ede8;
-          position: relative;
-          overflow: hidden;
-          font-family: 'Outfit', sans-serif;
-        }
+        {/* Dropzone */}
+        <div
+          onClick={() => !file && inputRef.current.click()}
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition
+          ${dragging ? "border-blue-500 bg-blue-50" : "border-gray-300"}
+          ${file ? "bg-green-50 border-green-400" : ""}`}
+        >
+          <input
+            ref={inputRef}
+            type="file"
+            accept="application/pdf"
+            hidden
+            onChange={(e) => handleFile(e.target.files[0])}
+          />
 
-        .upload-root::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background:
-            radial-gradient(ellipse 600px 400px at 70% 20%, rgba(37,99,235,0.07) 0%, transparent 70%),
-            radial-gradient(ellipse 400px 350px at 10% 80%, rgba(16,185,129,0.05) 0%, transparent 60%);
-          pointer-events: none;
-        }
+          {!file ? (
+            <>
+              <p className="font-medium">
+                {dragging ? "Drop file here" : "Click or drag PDF"}
+              </p>
+              <p className="text-sm text-gray-500">PDF only • max 20MB</p>
+            </>
+          ) : (
+            <>
+              <p className="font-semibold">{file.name}</p>
+              <p className="text-sm text-gray-500">{pageCount} pages</p>
 
-        .deco-circle-1 {
-          position: absolute;
-          width: 340px; height: 340px;
-          border-radius: 50%;
-          border: 1px solid rgba(37,99,235,0.09);
-          top: -80px; right: -100px;
-          pointer-events: none;
-        }
-        .deco-circle-2 {
-          position: absolute;
-          width: 180px; height: 180px;
-          border-radius: 50%;
-          border: 1px solid rgba(37,99,235,0.06);
-          bottom: 40px; left: -50px;
-          pointer-events: none;
-        }
-        .deco-dot-grid {
-          position: absolute;
-          top: 80px; left: 36px;
-          width: 90px; height: 90px;
-          background-image: radial-gradient(circle, rgba(37,99,235,0.14) 1.5px, transparent 1.5px);
-          background-size: 16px 16px;
-          pointer-events: none;
-        }
-
-        .card {
-          position: relative;
-          z-index: 1;
-          background: #ffffff;
-          border-radius: 24px;
-          padding: 1.75rem 2rem 1.6rem;
-          width: 100%;
-          max-width: 440px;
-          box-shadow:
-            0 4px 6px rgba(0,0,0,0.03),
-            0 16px 40px rgba(0,0,0,0.07),
-            0 0 0 1px rgba(0,0,0,0.04);
-          animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-        }
-
-        @keyframes cardIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          background: #eff6ff;
-          color: #2563eb;
-          border-radius: 100px;
-          padding: 4px 11px;
-          font-size: 0.67rem;
-          font-weight: 600;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          margin-bottom: 0.8rem;
-        }
-
-        .badge-dot {
-          width: 5px; height: 5px;
-          border-radius: 50%;
-          background: #2563eb;
-          animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%       { opacity: 0.5; transform: scale(0.75); }
-        }
-
-        .headline {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.65rem;
-          line-height: 1.2;
-          color: #0f172a;
-          margin: 0 0 0.35rem;
-          letter-spacing: -0.01em;
-        }
-
-        .subtext {
-          color: #64748b;
-          font-size: 0.85rem;
-          line-height: 1.5;
-          font-weight: 400;
-          margin-bottom: 1.1rem;
-        }
-
-        .divider {
-          height: 1px;
-          background: linear-gradient(to right, transparent, #e2e8f0, transparent);
-          margin-bottom: 1.1rem;
-        }
-
-        .drop-zone {
-          border-radius: 14px;
-          border: 2px dashed #cbd5e1;
-          background: #f8fafc;
-          padding: 1.5rem 1.25rem;
-          cursor: pointer;
-          transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
-          text-align: center;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .drop-zone::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(ellipse at 50% 0%, rgba(37,99,235,0.06), transparent 70%);
-          opacity: 0;
-          transition: opacity 0.3s;
-          pointer-events: none;
-        }
-
-        .drop-zone:hover              { border-color: #93c5fd; background: #f0f7ff; box-shadow: 0 0 0 4px rgba(37,99,235,0.06); }
-        .drop-zone:hover::after       { opacity: 1; }
-        .drop-zone.dragging           { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 5px rgba(37,99,235,0.1); transform: scale(1.01); }
-        .drop-zone.dragging::after    { opacity: 1; }
-        .drop-zone.has-file           { border-style: solid; border-color: #6ee7b7; background: #f0fdf4; cursor: default; }
-
-        .icon-wrap {
-          width: 44px; height: 44px;
-          border-radius: 13px;
-          display: flex; align-items: center; justify-content: center;
-          margin: 0 auto 0.65rem;
-          transition: background 0.2s, transform 0.2s;
-        }
-
-        .icon-wrap.idle    { background: #e2e8f0; }
-        .icon-wrap.active  { background: #dbeafe; transform: scale(1.08); }
-        .icon-wrap.success { background: #d1fae5; }
-
-        .upload-icon { width: 20px; height: 20px; color: #94a3b8; transition: color 0.2s; }
-        .icon-wrap.active .upload-icon { color: #2563eb; }
-        .check-icon  { width: 20px; height: 20px; color: #10b981; }
-
-        .drop-label  { font-weight: 600; color: #1e293b; font-size: 0.85rem; margin-bottom: 3px; }
-        .drop-hint   { font-size: 0.73rem; color: #94a3b8; }
-
-        .file-name {
-          font-weight: 600;
-          color: #0f172a;
-          font-size: 0.85rem;
-          margin-bottom: 6px;
-          word-break: break-all;
-          padding: 0 0.5rem;
-        }
-
-        .file-meta {
-          font-size: 0.73rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-        }
-
-        .file-meta-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: #f1f5f9;
-          border-radius: 100px;
-          padding: 2px 9px;
-          font-size: 0.7rem;
-          font-weight: 500;
-          color: #475569;
-        }
-
-        .remove-btn {
-          margin-top: 0.5rem;
-          background: none;
-          border: none;
-          font-size: 0.7rem;
-          color: #94a3b8;
-          cursor: pointer;
-          padding: 3px 8px;
-          border-radius: 6px;
-          transition: color 0.15s, background 0.15s;
-          font-family: inherit;
-        }
-
-        .remove-btn:hover { color: #ef4444; background: #fef2f2; }
-
-        /* Step trail — compact */
-        .steps {
-          display: flex;
-          margin: 1rem 0 0;
-        }
-
-        .step {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          position: relative;
-        }
-
-        .step:not(:last-child)::after {
-          content: '';
-          position: absolute;
-          top: 10px; left: calc(50% + 12px);
-          width: calc(100% - 24px);
-          height: 1px;
-          background: #e2e8f0;
-        }
-
-        .step-num {
-          width: 20px; height: 20px;
-          border-radius: 50%;
-          background: #f1f5f9;
-          border: 1.5px solid #e2e8f0;
-          font-size: 0.6rem;
-          font-weight: 700;
-          color: #94a3b8;
-          display: flex; align-items: center; justify-content: center;
-          position: relative;
-          z-index: 1;
-        }
-
-        .step-num.active {
-          background: #2563eb;
-          border-color: #2563eb;
-          color: white;
-          box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
-        }
-
-        .step-label {
-          font-size: 0.6rem;
-          color: #94a3b8;
-          font-weight: 500;
-          text-align: center;
-        }
-
-        .step-label.active { color: #2563eb; }
-
-        /* CTA */
-        .cta-btn {
-          margin-top: 1.1rem;
-          width: 100%;
-          padding: 0.8rem 1rem;
-          border-radius: 13px;
-          border: none;
-          font-family: 'Outfit', sans-serif;
-          font-size: 0.9rem;
-          font-weight: 600;
-          letter-spacing: 0.01em;
-          cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .cta-btn.enabled {
-          background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 60%, #3b82f6 100%);
-          color: white;
-          box-shadow: 0 4px 14px rgba(37,99,235,0.28);
-        }
-
-        .cta-btn.enabled:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 22px rgba(37,99,235,0.35);
-        }
-
-        .cta-btn.enabled:active { transform: translateY(0); }
-
-        .cta-btn.enabled::after {
-          content: '';
-          position: absolute;
-          top: 0; left: -100%;
-          width: 60%; height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-          transform: skewX(-20deg);
-          transition: left 0.5s;
-        }
-
-        .cta-btn.enabled:hover::after { left: 150%; }
-
-        .cta-btn.disabled {
-          background: #f1f5f9;
-          color: #cbd5e1;
-          cursor: not-allowed;
-        }
-
-        .cta-inner {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 7px;
-        }
-
-        .arrow { display: inline-flex; transition: transform 0.2s; }
-        .cta-btn.enabled:hover .arrow { transform: translateX(4px); }
-      `}</style>
-
-      <div className="upload-root">
-        <div className="deco-circle-1" />
-        <div className="deco-circle-2" />
-        <div className="deco-dot-grid" />
-
-        <div className="card">
-          <div className="badge">
-            <span className="badge-dot" />
-            Print on demand
-          </div>
-
-          <h1 className="headline">
-            Print smarter,<br />not harder.
-          </h1>
-          <p className="subtext">
-            Upload your PDF — we handle the rest. Pay online, collect in store.
-          </p>
-
-          <div className="divider" />
-
-          <div
-            className={`drop-zone${dragging ? " dragging" : ""}${file ? " has-file" : ""}`}
-            onClick={() => !file && inputRef.current.click()}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-          >
-            <input
-              ref={inputRef}
-              type="file"
-              accept="application/pdf"
-              style={{ display: "none" }}
-              onChange={(e) => handleFile(e.target.files[0])}
-            />
-
-            {!file ? (
-              <>
-                <div className={`icon-wrap${dragging ? " active" : " idle"}`}>
-                  <svg className="upload-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                  </svg>
-                </div>
-                <p className="drop-label">{dragging ? "Release to upload" : "Drop your PDF here"}</p>
-                <p className="drop-hint">or click to browse · PDF only · max 20MB</p>
-              </>
-            ) : (
-              <>
-                <div className="icon-wrap success">
-                  <svg className="check-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
-                </div>
-                <p className="file-name">{file.name}</p>
-                <div className="file-meta">
-                  <span className="file-meta-tag">
-                    <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M9 16.5v.75m3-3v3M15 12v5.25m-4.5-11.625H4.5" />
-                    </svg>
-                    PDF
-                  </span>
-                  <span className="file-meta-tag">
-                    {pageCount} {pageCount === 1 ? "page" : "pages"}
-                  </span>
-                </div>
-                <button
-                  className="remove-btn"
-                  onClick={(e) => { e.stopPropagation(); setFile(null); setPageCount(null); }}
-                >
-                  × Remove file
-                </button>
-              </>
-            )}
-          </div>
-
-          <div className="steps">
-            {["Upload", "Options", "Pay", "Collect"].map((label, i) => (
-              <div className="step" key={label}>
-                <div className={`step-num${i === 0 ? " active" : ""}`}>{i + 1}</div>
-                <span className={`step-label${i === 0 ? " active" : ""}`}>{label}</span>
-              </div>
-            ))}
-          </div>
-
-          <button
-            className={`cta-btn ${file ? "enabled" : "disabled"}`}
-            disabled={!file}
-            onClick={() => file && onContinue({ file, pageCount })}
-          >
-            <span className="cta-inner">
-              Continue to Print Options
-              <span className="arrow">
-                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
-              </span>
-            </span>
-          </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeFile();
+                }}
+                className="text-red-500 text-sm mt-2"
+              >
+                Remove
+              </button>
+            </>
+          )}
         </div>
+
+        {/* Progress Bar */}
+        {uploading && (
+          <div className="mt-4">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-blue-500 h-2 rounded-full transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="text-xs mt-1 text-gray-500">
+              Uploading... {progress}%
+            </p>
+          </div>
+        )}
+
+        {/* Error UI */}
+        {error && (
+          <div className="mt-3 text-sm text-red-600 bg-red-50 p-2 rounded">
+            {error}
+          </div>
+        )}
+
+        {/* CTA */}
+        <button
+          disabled={!file || uploading}
+          onClick={uploadFile}
+          className={`mt-4 w-full py-2 rounded-lg font-medium transition
+          ${
+            file && !uploading
+              ? "bg-blue-600 text-white hover:bg-blue-700"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+        >
+          {uploading ? "Uploading..." : "Upload & Continue"}
+        </button>
       </div>
-    </>
+    </div>
   );
 }

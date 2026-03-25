@@ -1,361 +1,500 @@
-import { useEffect, useState } from "react";
+// import React, { useEffect, useState } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
 
-const STEPS = [
-  { label: "Verifying order details", duration: 700 },
-  { label: "Contacting payment gateway", duration: 800 },
-  { label: "Authorising transaction", duration: 600 },
-  { label: "Confirming with print shop", duration: 400 },
-];
+// export default function PaymentPage() {
+//   const { orderId } = useParams();
+//   const navigate = useNavigate();
 
-export default function PaymentPage({ onSuccess }) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [doneSteps, setDoneSteps] = useState([]);
+//   const [order, setOrder] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [processing, setProcessing] = useState(false);
+//   const [error, setError] = useState(null);
+//   const [success, setSuccess] = useState(false);
+
+//   /* ---------------- FETCH ORDER ---------------- */
+
+//   useEffect(() => {
+//     const fetchOrder = async () => {
+//       try {
+//         const res = await fetch(
+//           `http://localhost:3000/api/orders/${orderId}/checkout`,
+//         );
+
+//         if (!res.ok) {
+//           throw new Error("Failed to fetch order");
+//         }
+
+//         const data = await res.json();
+//         console.log("Checkout response:", data);
+
+//         setOrder(data);
+//       } catch (err) {
+//         setError(err.message);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchOrder();
+//   }, [orderId]);
+
+//   /* ---------------- HANDLE PAYMENT ---------------- */
+
+//   // const handlePayment = async () => {
+//   //   try {
+//   //     setProcessing(true);
+
+//   //     const res = await fetch(
+//   //       `http://localhost:3000/api/orders/${orderId}/payment`,
+//   //       {
+//   //         method: "POST",
+//   //       },
+//   //     );
+
+//   //     if (!res.ok) {
+//   //       throw new Error("Payment failed");
+//   //     }
+
+//   //     setSuccess(true);
+//   //   } catch (err) {
+//   //     alert(err.message);
+//   //   } finally {
+//   //     setProcessing(false);
+//   //   }
+//   // };
+
+// const handlePayment = async () => {
+//   try {
+//     setProcessing(true);
+
+//     // Step 1: create payment
+//     const res = await fetch(`/api/orders/${orderId}/payment`, {
+//       method: "POST"
+//     });
+
+//     const paymentData = await res.json();
+
+//     // Step 2: simulate gateway delay
+//     await new Promise((r) => setTimeout(r, 2000));
+
+//     // Step 3: simulate success
+//     const simulateRes = await fetch(
+//       `/api/payments/${paymentData.paymentId}/simulate`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify({ success: true })
+//       }
+//     );
+
+//     const result = await simulateRes.json();
+
+//     setOtp(result.otp); // 🔥 REAL OTP from backend
+//     setSuccess(true);
+
+//   } catch (err) {
+//     alert(err.message);
+//   } finally {
+//     setProcessing(false);
+//   }
+// };
+
+//   /* ---------------- LOADING ---------------- */
+
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center text-gray-600">
+//         Loading order...
+//       </div>
+//     );
+//   }
+
+//   /* ---------------- ERROR ---------------- */
+
+//   if (error) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center text-red-500">
+//         {error}
+//       </div>
+//     );
+//   }
+
+//   /* ---------------- SUCCESS SCREEN ---------------- */
+
+//   if (success) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center bg-gray-100">
+//         <div className="bg-white shadow-lg rounded-xl p-8 text-center max-w-md">
+//           <h2 className="text-2xl font-semibold text-green-600 mb-4">
+//             Payment Successful
+//           </h2>
+
+//           <p className="text-gray-600 mb-6">
+//             Your order has been paid successfully.
+//           </p>
+
+//           <p className="text-sm text-gray-500 mb-6">Order ID: {orderId}</p>
+
+//           <button
+//             onClick={() => navigate("/")}
+//             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+//           >
+//             Go Home
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   /* ---------------- PAYMENT PAGE ---------------- */
+
+//   return (
+//     <div className="min-h-screen bg-gray-100 flex justify-center py-10 px-4">
+//       <div className="w-full max-w-xl bg-white shadow-md rounded-xl p-6">
+//         <h2 className="text-xl font-semibold border-b pb-3 mb-4">Payment</h2>
+
+//         {/* Order Info */}
+
+//         <div className="space-y-2 text-gray-700">
+//           <p>
+//             <b>Order ID:</b> {order?.orderId}
+//           </p>
+
+//           <p>
+//             <b>Pages:</b> {order?.printOptions?.selectedPages}
+//           </p>
+
+//           <p>
+//             <b>Copies:</b> {order?.printOptions?.copies}
+//           </p>
+
+//           <p>
+//             <b>Print Type:</b>{" "}
+//             {order?.printOptions?.printType === "bw"
+//               ? "Black & White"
+//               : "Color"}
+//           </p>
+
+//           <p>
+//             <b>Paper:</b> {order?.printOptions?.paperSize?.toUpperCase()}
+//           </p>
+
+//           <p>
+//             <b>Sides:</b> {order?.printOptions?.sides}
+//           </p>
+//         </div>
+
+//         {/* Price */}
+
+//         <div className="border-t mt-6 pt-4 space-y-2 text-gray-700">
+//           <p>Unit Price: ₹{order?.price?.unitPrice}</p>
+
+//           <p>Subtotal: ₹{order?.price?.subtotal}</p>
+
+//           <p>Tax: ₹{order?.price?.tax}</p>
+
+//           <p className="text-lg font-semibold">Total: ₹{order?.price?.total}</p>
+//         </div>
+
+//         {/* Pay Button */}
+
+//         <button
+//           onClick={handlePayment}
+//           disabled={processing}
+//           className={`mt-6 w-full py-3 rounded-lg text-white ${
+//             processing ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+//           }`}
+//         >
+//           {processing ? "Processing Payment..." : "Pay Now"}
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
+
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+
+export default function PaymentPage() {
+  const { orderId } = useParams();
+  const navigate = useNavigate();
+
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [otp, setOtp] = useState(null);
+
+  const BASE = "http://localhost:3000";
+
+  /* ---------------- FETCH ORDER ---------------- */
 
   useEffect(() => {
-    let stepIdx = 0;
-    let elapsed = 0;
+    const fetchOrder = async () => {
+      try {
+        const res = await fetch(`${BASE}/api/orders/${orderId}/checkout`);
 
-    const timers = STEPS.map((step, i) => {
-      const t = setTimeout(() => {
-        setCurrentStep(i + 1);
-        setDoneSteps(prev => [...prev, i]);
-      }, elapsed + step.duration);
-      elapsed += step.duration;
-      return t;
-    });
-
-    // Trigger success after all steps
-    const done = setTimeout(() => onSuccess(), elapsed + 300);
-
-    return () => { timers.forEach(clearTimeout); clearTimeout(done); };
-  }, []);
-
-  return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Outfit:wght@300;400;500;600&display=swap');
-
-        .pay-root {
-          min-height: 100vh;
-          background: #f0ede8;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 2rem 1.5rem;
-          font-family: 'Outfit', sans-serif;
-          position: relative;
-          overflow: hidden;
+        if (!res.ok) {
+          throw new Error("Failed to fetch order");
         }
 
-        .pay-root::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background:
-            radial-gradient(ellipse 600px 500px at 70% 20%, rgba(37,99,235,0.07) 0%, transparent 70%),
-            radial-gradient(ellipse 500px 400px at 15% 80%, rgba(16,185,129,0.05) 0%, transparent 60%);
-          pointer-events: none;
-        }
+        const data = await res.json();
+        setOrder(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        .deco-ring {
-          position: absolute;
-          border-radius: 50%;
-          border: 1px solid rgba(37,99,235,0.08);
-          pointer-events: none;
-        }
+    fetchOrder();
+  }, [orderId]);
 
-        .pay-card {
-          position: relative;
-          z-index: 1;
-          background: white;
-          border-radius: 28px;
-          padding: 2.75rem 2.25rem;
-          width: 100%;
-          max-width: 420px;
-          box-shadow:
-            0 4px 6px rgba(0,0,0,0.03),
-            0 20px 50px rgba(0,0,0,0.08),
-            0 0 0 1px rgba(0,0,0,0.04);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-        }
+  /* ---------------- HANDLE PAYMENT ---------------- */
 
-        @keyframes cardIn {
-          from { opacity: 0; transform: translateY(24px) scale(0.98); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
+  const handlePayment = async () => {
+    if (processing) return;
+    try {
+      setProcessing(true);
 
-        /* Spinner */
-        .spinner-wrap {
-          position: relative;
-          width: 80px;
-          height: 80px;
-          margin-bottom: 1.75rem;
-        }
+      // 1. Create payment
+      const res = await fetch(`${BASE}/api/orders/${orderId}/payment`, {
+        method: "POST",
+      });
 
-        .spinner-bg {
-          position: absolute;
-          inset: 0;
-          border-radius: 50%;
-          background: #eff6ff;
-        }
+      if (!res.ok) throw new Error("Failed to create payment");
 
-        .spinner-ring {
-          position: absolute;
-          inset: 0;
-          border-radius: 50%;
-          border: 3px solid transparent;
-          border-top-color: #2563eb;
-          border-right-color: #93c5fd;
-          animation: spinRing 0.9s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
+      const paymentData = await res.json();
 
-        .spinner-icon {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
+      // 2. Simulate delay
+      await new Promise((r) => setTimeout(r, 2000));
 
-        @keyframes spinRing {
-          to { transform: rotate(360deg); }
-        }
+      // 3. Simulate payment success
+      const simulateRes = await fetch(
+        `${BASE}/api/orders/payments/${paymentData.paymentId}/simulate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ success: true }),
+        },
+      );
+      console.log("simulate status:", simulateRes.status);
 
-        /* Pulse glow behind spinner */
-        .spinner-glow {
-          position: absolute;
-          inset: -8px;
-          border-radius: 50%;
-          background: rgba(37,99,235,0.08);
-          animation: glowPulse 1.8s ease-in-out infinite;
-        }
+      if (!simulateRes.ok) throw new Error("Payment failed");
 
-        @keyframes glowPulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50%       { transform: scale(1.15); opacity: 0.5; }
-        }
+      const result = await simulateRes.json();
 
-        /* Text */
-        .pay-headline {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.5rem;
-          color: #0f172a;
-          margin: 0 0 6px;
-          text-align: center;
-        }
+      if (result.status !== "success") {
+        throw new Error("Payment failed");
+      }
 
-        .pay-sub {
-          font-size: 0.85rem;
-          color: #94a3b8;
-          text-align: center;
-          margin-bottom: 2rem;
-          line-height: 1.5;
-        }
+      // // 4. Set OTP
+      // setOtp(result.otp);
+      // setSuccess(true);
 
-        /* Divider */
-        .pay-divider {
-          width: 100%;
-          height: 1px;
-          background: linear-gradient(to right, transparent, #e2e8f0, transparent);
-          margin-bottom: 1.5rem;
-        }
+      navigate("/success", {
+        replace: true,
+        state: {
+          orderData: {
+            ...order,
+            otp: result.otp,
+          },
+        },
+      });
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
 
-        /* Step list */
-        .step-list {
-          width: 100%;
-          display: flex;
-          flex-direction: column;
-          gap: 0;
-        }
+  // const handlePayment = async () => {
+  //   try {
+  //     setProcessing(true);
 
-        .step-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 0.65rem 0;
-          position: relative;
-        }
+  //     console.log("STEP 1: Creating payment...");
 
-        /* Vertical connector */
-        .step-item:not(:last-child)::after {
-          content: '';
-          position: absolute;
-          left: 11px;
-          top: calc(0.65rem + 23px);
-          width: 1.5px;
-          height: calc(100% - 12px);
-          background: #e2e8f0;
-        }
+  //     const res = await fetch(`${BASE}/api/orders/${orderId}/payment`, {
+  //       method: "POST",
+  //     });
 
-        .step-item:not(:last-child).done::after {
-          background: #10b981;
-          transition: background 0.3s;
-        }
+  //     console.log("STEP 2: Payment response received", res.status);
 
-        .step-dot {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-          position: relative;
-          z-index: 1;
-        }
+  //     if (!res.ok) throw new Error("Failed to create payment");
 
-        .step-dot.pending {
-          background: #f1f5f9;
-          border: 1.5px solid #e2e8f0;
-        }
+  //     const paymentData = await res.json();
 
-        .step-dot.active {
-          background: #eff6ff;
-          border: 1.5px solid #93c5fd;
-          box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
-        }
+  //     console.log("STEP 3: Payment data", paymentData);
 
-        .step-dot.done {
-          background: #10b981;
-          border: 1.5px solid #10b981;
-        }
+  //     await new Promise((r) => setTimeout(r, 2000));
 
-        .step-dot-inner {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          transition: all 0.3s;
-        }
+  //     console.log("STEP 4: Calling simulate...");
 
-        .step-dot.pending .step-dot-inner { background: #cbd5e1; }
-        .step-dot.active  .step-dot-inner {
-          background: #2563eb;
-          animation: dotPulse 0.8s ease-in-out infinite alternate;
-        }
+  //     const simulateRes = await fetch(
+  //       `${BASE}/api/orders/payments/${paymentData.paymentId}/simulate`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ success: true }),
+  //       },
+  //     );
 
-        @keyframes dotPulse {
-          from { transform: scale(0.7); opacity: 0.7; }
-          to   { transform: scale(1.2); opacity: 1; }
-        }
+  //     console.log("STEP 5: Simulate response", simulateRes.status);
 
-        .step-label {
-          font-size: 0.85rem;
-          font-weight: 500;
-          transition: color 0.3s;
-        }
+  //     const result = await simulateRes.json();
 
-        .step-label.pending { color: #94a3b8; }
-        .step-label.active  { color: #1e293b; font-weight: 600; }
-        .step-label.done    { color: #64748b; }
+  //     console.log("STEP 6: Simulate result", result);
 
-        /* Security note */
-        .security-note {
-          margin-top: 1.75rem;
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          font-size: 0.75rem;
-          color: #94a3b8;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          border-radius: 100px;
-          padding: 6px 14px;
-        }
+  //     navigate("/success", {
+  //       state: {
+  //         orderData: {
+  //           ...order,
+  //           otp: result.otp,
+  //         },
+  //       },
+  //     });
+  //   } catch (err) {
+  //     console.error("ERROR:", err);
+  //     alert(err.message);
+  //   } finally {
+  //     setProcessing(false);
+  //   }
+  // };
 
-        /* Shimmer on the card edge while processing */
-        .pay-card::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 28px;
-          background: linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(37,99,235,0.04) 50%,
-            transparent 100%
-          );
-          background-size: 200% 100%;
-          animation: cardShimmer 2.5s ease-in-out infinite;
-          pointer-events: none;
-        }
+  /* ---------------- LOADING ---------------- */
 
-        @keyframes cardShimmer {
-          0%   { background-position: -200% 0; }
-          100% { background-position:  200% 0; }
-        }
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Loading order...
+      </div>
+    );
+  }
 
-        /* Step check icon pop */
-        @keyframes checkPop {
-          0%   { transform: scale(0.5); opacity: 0; }
-          70%  { transform: scale(1.2); }
-          100% { transform: scale(1); opacity: 1; }
-        }
+  /* ---------------- ERROR ---------------- */
 
-        .check-pop { animation: checkPop 0.35s cubic-bezier(0.22,1,0.36,1) both; }
-      `}</style>
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
+  }
 
-      <div className="pay-root">
-        <div className="deco-ring" style={{ width: 400, height: 400, top: -130, right: -120 }} />
-        <div className="deco-ring" style={{ width: 220, height: 220, bottom: 50, left: 40 }} />
+  /* ---------------- PROCESSING ---------------- */
 
-        <div className="pay-card">
-          {/* Spinner */}
-          <div className="spinner-wrap">
-            <div className="spinner-glow" />
-            <div className="spinner-bg" />
-            <div className="spinner-ring" />
-            <div className="spinner-icon">
-              <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="#2563eb" strokeWidth={1.75}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Headline */}
-          <h2 className="pay-headline">Processing Payment</h2>
-          <p className="pay-sub">
-            Please don't close or refresh this page.<br />This usually takes just a moment.
+  if (processing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        <div className="text-center">
+          <p className="text-lg font-semibold">Processing payment...</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Please do not close this page
           </p>
-
-          <div className="pay-divider" />
-
-          {/* Step list */}
-          <div className="step-list">
-            {STEPS.map((step, i) => {
-              const isDone = doneSteps.includes(i);
-              const isActive = currentStep === i && !isDone;
-              const state = isDone ? "done" : isActive ? "active" : "pending";
-
-              return (
-                <div key={i} className={`step-item ${state}`}>
-                  <div className={`step-dot ${state}`}>
-                    {isDone ? (
-                      <svg className="check-pop" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                    ) : (
-                      <div className="step-dot-inner" />
-                    )}
-                  </div>
-                  <span className={`step-label ${state}`}>{step.label}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Security note */}
-          <div className="security-note">
-            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-            </svg>
-            256-bit SSL encrypted · Powered by Stripe
-          </div>
         </div>
       </div>
-    </>
+    );
+  }
+
+  /* ---------------- SUCCESS ---------------- */
+
+  // if (success) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-gray-100">
+  //       <div className="bg-white shadow-lg rounded-xl p-8 text-center max-w-md">
+
+  //         <h2 className="text-2xl font-semibold text-green-600 mb-4">
+  //           Payment Successful
+  //         </h2>
+
+  //         <p className="text-gray-600 mb-4">
+  //           Your order has been paid successfully.
+  //         </p>
+
+  //         <div className="mb-6">
+  //           <p className="text-sm text-gray-500 mb-2">Your OTP</p>
+  //           <div className="text-3xl font-bold tracking-widest text-blue-600">
+  //             {otp}
+  //           </div>
+  //           <p className="text-xs text-gray-400 mt-2">
+  //             Valid for 10 minutes
+  //           </p>
+  //         </div>
+
+  //         <p className="text-sm text-gray-500 mb-6">
+  //           Order ID: {orderId}
+  //         </p>
+
+  //         <button
+  //           onClick={() => navigate("/")}
+  //           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+  //         >
+  //           Go Home
+  //         </button>
+
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  /* ---------------- PAYMENT PAGE ---------------- */
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex justify-center py-10 px-4">
+      <div className="w-full max-w-xl bg-white shadow-md rounded-xl p-6">
+        <h2 className="text-xl font-semibold border-b pb-3 mb-4">Payment</h2>
+
+        {/* Order Info */}
+        <div className="space-y-2 text-gray-700">
+          <p>
+            <b>Order ID:</b> {order?.orderId}
+          </p>
+          <p>
+            <b>Pages:</b> {order?.printOptions?.selectedPages}
+          </p>
+          <p>
+            <b>Copies:</b> {order?.printOptions?.copies}
+          </p>
+          <p>
+            <b>Print Type:</b>{" "}
+            {order?.printOptions?.printType === "bw"
+              ? "Black & White"
+              : "Color"}
+          </p>
+          <p>
+            <b>Paper:</b> {order?.printOptions?.paperSize?.toUpperCase()}
+          </p>
+          <p>
+            <b>Sides:</b> {order?.printOptions?.sides}
+          </p>
+        </div>
+
+        {/* Price */}
+        <div className="border-t mt-6 pt-4 space-y-2 text-gray-700">
+          <p>Unit Price: ₹{order?.price?.unitPrice}</p>
+          <p>Subtotal: ₹{order?.price?.subtotal}</p>
+          <p>Tax: ₹{order?.price?.tax}</p>
+          <p className="text-lg font-semibold">Total: ₹{order?.price?.total}</p>
+        </div>
+
+        {/* Pay Button */}
+        <button
+          onClick={handlePayment}
+          disabled={processing}
+          className={`mt-6 w-full py-3 rounded-lg text-white ${
+            processing ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+          }`}
+        >
+          Pay Now
+        </button>
+      </div>
+    </div>
   );
 }
