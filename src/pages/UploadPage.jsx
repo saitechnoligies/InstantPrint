@@ -1,40 +1,78 @@
 import { useState, useRef, useCallback } from "react";
+// import * as pdfjsLib from "pdfjs-dist";
+// import pdfWorker from "pdfjs-dist/build/pdf.worker.min?url";
+
+// pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+
+// pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+
 import * as pdfjsLib from "pdfjs-dist";
-import pdfWorker from "pdfjs-dist/build/pdf.worker.min?url";
+import workerSrc from "pdfjs-dist/build/pdf.worker.min?url";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
-
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 export default function UploadPage({ onContinue }) {
   const [dragging, setDragging] = useState(false);
   const [file, setFile] = useState(null);
   const [pageCount, setPageCount] = useState(null);
   const inputRef = useRef();
 
-  
+  //   const handleFile = async (f) => {
+  //   if (!f || f.type !== "application/pdf") return;
 
+  //   try {
+  //     const arrayBuffer = await f.arrayBuffer();
+  //     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  //     const numPages = pdf.numPages;
+
+  //     setFile(f);
+  //     setPageCount(numPages);
+  //   } catch (err) {
+  //     console.error("Error reading PDF:", err);
+  //   }
+  // };
 
   const handleFile = async (f) => {
-  if (!f || f.type !== "application/pdf") return;
+    if (!f) return;
 
-  try {
-    const arrayBuffer = await f.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const numPages = pdf.numPages;
+    // ✅ FIX: mobile-safe validation
+    const isPDF =
+      f.type === "application/pdf" || f.name?.toLowerCase().endsWith(".pdf");
 
-    setFile(f);
-    setPageCount(numPages);
-  } catch (err) {
-    console.error("Error reading PDF:", err);
-  }
-};
+    if (!isPDF) {
+      alert("Please upload a valid PDF file");
+      return;
+    }
 
+    // ✅ FIX: prevent mobile crashes
+    if (f.size > 20 * 1024 * 1024) {
+      alert("File must be under 20MB");
+      return;
+    }
+
+    try {
+      const arrayBuffer = await f.arrayBuffer();
+
+      const pdf = await pdfjsLib.getDocument({
+        data: arrayBuffer,
+      }).promise;
+
+      setFile(f);
+      setPageCount(pdf.numPages);
+    } catch (err) {
+      console.error("Error reading PDF:", err);
+      alert("Failed to read PDF. Try another file.");
+    }
+  };
   const onDrop = useCallback((e) => {
     e.preventDefault();
     setDragging(false);
     handleFile(e.dataTransfer.files[0]);
   }, []);
 
-  const onDragOver = (e) => { e.preventDefault(); setDragging(true); };
+  const onDragOver = (e) => {
+    e.preventDefault();
+    setDragging(true);
+  };
   const onDragLeave = () => setDragging(false);
 
   return (
@@ -374,7 +412,9 @@ export default function UploadPage({ onContinue }) {
           </div>
 
           <h1 className="headline">
-            Print smarter,<br />not harder.
+            Print smarter,
+            <br />
+            not harder.
           </h1>
           <p className="subtext">
             Upload your PDF — we handle the rest. Pay online, collect in store.
@@ -384,7 +424,12 @@ export default function UploadPage({ onContinue }) {
 
           <div
             className={`drop-zone${dragging ? " dragging" : ""}${file ? " has-file" : ""}`}
-            onClick={() => !file && inputRef.current.click()}
+            onClick={() => {
+              if (!file && inputRef.current) {
+                inputRef.current.value = null; // allows re-upload same file
+                inputRef.current.click();
+              }
+            }}
             onDrop={onDrop}
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
@@ -392,33 +437,68 @@ export default function UploadPage({ onContinue }) {
             <input
               ref={inputRef}
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,.pdf"
               style={{ display: "none" }}
-              onChange={(e) => handleFile(e.target.files[0])}
+              onChange={(e) => handleFile(e.target.files?.[0])}
             />
 
             {!file ? (
               <>
                 <div className={`icon-wrap${dragging ? " active" : " idle"}`}>
-                  <svg className="upload-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  <svg
+                    className="upload-icon"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.75}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                    />
                   </svg>
                 </div>
-                <p className="drop-label">{dragging ? "Release to upload" : "Drop your PDF here"}</p>
-                <p className="drop-hint">or click to browse · PDF only · max 20MB</p>
+                <p className="drop-label">
+                  {dragging ? "Release to upload" : "Drop your PDF here"}
+                </p>
+                <p className="drop-hint">
+                  or click to browse · PDF only · max 20MB
+                </p>
               </>
             ) : (
               <>
                 <div className="icon-wrap success">
-                  <svg className="check-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  <svg
+                    className="check-icon"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.5 12.75l6 6 9-13.5"
+                    />
                   </svg>
                 </div>
                 <p className="file-name">{file.name}</p>
                 <div className="file-meta">
                   <span className="file-meta-tag">
-                    <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M9 16.5v.75m3-3v3M15 12v5.25m-4.5-11.625H4.5" />
+                    <svg
+                      width="10"
+                      height="10"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M9 16.5v.75m3-3v3M15 12v5.25m-4.5-11.625H4.5"
+                      />
                     </svg>
                     PDF
                   </span>
@@ -428,7 +508,11 @@ export default function UploadPage({ onContinue }) {
                 </div>
                 <button
                   className="remove-btn"
-                  onClick={(e) => { e.stopPropagation(); setFile(null); setPageCount(null); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFile(null);
+                    setPageCount(null);
+                  }}
                 >
                   × Remove file
                 </button>
@@ -439,8 +523,12 @@ export default function UploadPage({ onContinue }) {
           <div className="steps">
             {["Upload", "Options", "Pay", "Collect"].map((label, i) => (
               <div className="step" key={label}>
-                <div className={`step-num${i === 0 ? " active" : ""}`}>{i + 1}</div>
-                <span className={`step-label${i === 0 ? " active" : ""}`}>{label}</span>
+                <div className={`step-num${i === 0 ? " active" : ""}`}>
+                  {i + 1}
+                </div>
+                <span className={`step-label${i === 0 ? " active" : ""}`}>
+                  {label}
+                </span>
               </div>
             ))}
           </div>
@@ -453,8 +541,19 @@ export default function UploadPage({ onContinue }) {
             <span className="cta-inner">
               Continue to Print Options
               <span className="arrow">
-                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                <svg
+                  width="15"
+                  height="15"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                  />
                 </svg>
               </span>
             </span>
