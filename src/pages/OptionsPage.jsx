@@ -815,8 +815,8 @@ export default function OptionsPage({ fileData, onProceed }) {
                 <p className="section-label">Print Type</p>
                 <div className="toggle-group">
                   {[
-                    { id: "bw", icon: "◑", label: "Black & White", sub: `$${PAGES_RATE_BW}/pg` },
-                    { id: "color", icon: "🎨", label: "Color", sub: `$${PAGES_RATE_COLOR}/pg` },
+                    { id: "bw", icon: "◑", label: "Black & White", sub: `₹${PAGES_RATE_BW}/pg` },
+                    { id: "color", icon: "🎨", label: "Color", sub: `₹${PAGES_RATE_COLOR}/pg` },
                   ].map(({ id, icon, label, sub }) => (
                     <button
                       key={id}

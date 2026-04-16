@@ -104,7 +104,7 @@ export default function Nav({ onNav }) {
             </svg>
           </div>
           <span className="nav-logo-wordmark">
-            <span>Instant</span>Print
+            <span>Print</span>Kiosk
           </span>
         </div>
 
