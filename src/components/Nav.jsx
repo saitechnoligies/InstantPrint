@@ -109,7 +109,7 @@ export default function Nav({ onNav }) {
         </div>
 
         <div className="nav-links">
-          {["How it Works", "Pricing"].map((item) => (
+          {/* {["How it Works", "Pricing"].map((item) => (
             <button
               key={item}
               className="nav-link"
@@ -117,7 +117,7 @@ export default function Nav({ onNav }) {
             >
               {item}
             </button>
-          ))}
+          ))} */}
           <button className="nav-cta" onClick={() => onNav && onNav("Get Started")}>
             Get started
           </button>
