@@ -297,7 +297,7 @@ export default function PaymentPage() {
       // setOtp(result.otp);
       // setSuccess(true);
 
-      navigate("/success", {
+      navigate(`/success/${orderId}`, {
         replace: true,
         state: {
           orderData: {
@@ -446,9 +446,61 @@ export default function PaymentPage() {
 
   /* ---------------- PAYMENT PAGE ---------------- */
 
+  // return (
+  //   <div className="min-h-screen bg-gray-100 flex justify-center py-10 px-4">
+  //     <div className="w-full max-w-xl bg-white shadow-md rounded-xl p-6">
+  //       <h2 className="text-xl font-semibold border-b pb-3 mb-4">Payment</h2>
+
+  //       {/* Order Info */}
+  //       <div className="space-y-2 text-gray-700">
+  //         <p>
+  //           <b>Order ID:</b> {order?.orderId}
+  //         </p>
+  //         <p>
+  //           <b>Pages:</b> {order?.printOptions?.selectedPages}
+  //         </p>
+  //         <p>
+  //           <b>Copies:</b> {order?.printOptions?.copies}
+  //         </p>
+  //         <p>
+  //           <b>Print Type:</b>{" "}
+  //           {order?.printOptions?.printType === "bw"
+  //             ? "Black & White"
+  //             : "Color"}
+  //         </p>
+  //         <p>
+  //           <b>Paper:</b> {order?.printOptions?.paperSize?.toUpperCase()}
+  //         </p>
+  //         <p>
+  //           <b>Sides:</b> {order?.printOptions?.sides}
+  //         </p>
+  //       </div>
+
+  //       {/* Price */}
+  //       <div className="border-t mt-6 pt-4 space-y-2 text-gray-700">
+  //         <p>Unit Price: ₹{order?.price?.unitPrice}</p>
+  //         <p>Subtotal: ₹{order?.price?.subtotal}</p>
+  //         <p>Tax: ₹{order?.price?.tax}</p>
+  //         <p className="text-lg font-semibold">Total: ₹{order?.price?.total}</p>
+  //       </div>
+
+  //       {/* Pay Button */}
+  //       <button
+  //         onClick={handlePayment}
+  //         disabled={processing}
+  //         className={`mt-6 w-full py-3 rounded-lg text-white ${
+  //           processing ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+  //         }`}
+  //       >
+  //         Pay Now
+  //       </button>
+  //     </div>
+  //   </div>
+  // );
+
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center py-10 px-4">
-      <div className="w-full max-w-xl bg-white shadow-md rounded-xl p-6">
+    <div className="bg-gray-100 py-10 px-4 w-full">
+      <div className="w-full max-w-xl mx-auto bg-white shadow-md rounded-xl p-6">
         <h2 className="text-xl font-semibold border-b pb-3 mb-4">Payment</h2>
 
         {/* Order Info */}

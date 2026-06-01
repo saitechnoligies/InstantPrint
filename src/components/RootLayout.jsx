@@ -1,11 +1,16 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom'
+import React from "react";
+import { Outlet } from "react-router-dom";
+import Nav from "./Nav";
 
 function RootLayout() {
   return (
-    <div>
-    <h1>Root</h1><Outlet/></div>
-  )
-}
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Nav />
 
-export default RootLayout
+      <main className="flex-1 pt-16 ">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+export default RootLayout;

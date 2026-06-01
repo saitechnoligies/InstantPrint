@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min?url";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/react";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -15,6 +16,8 @@ export default function UploadPage() {
 
   const inputRef = useRef();
   const navigate = useNavigate();
+
+  const { user } = useUser();
 
   // 📄 Read PDF
   const handleFile = async (f) => {
@@ -67,6 +70,12 @@ export default function UploadPage() {
       // 1️⃣ Create order
       const orderRes = await fetch("http://localhost:3000/api/orders", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user?.id || null,
+        }),
       });
 
       if (!orderRes.ok) {
@@ -92,20 +101,30 @@ export default function UploadPage() {
         throw new Error("Invalid upload response");
       }
 
+      console.log("UPLOAD URL:", uploadUrl);
+
       setProgress(50);
 
       // 3️⃣ Upload file
       const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
         body: file,
-        headers: { "Content-Type": "application/pdf" },
+        // headers: { "Content-Type": "application/pdf" },
       });
+
+      console.log("UPLOAD STATUS:", uploadRes.status);
 
       if (!uploadRes.ok) {
         throw new Error("File upload failed");
       }
 
       setProgress(80);
+      console.log({
+        storageKey,
+        fileName: file.name,
+        fileSize: file.size,
+        pageCount,
+      });
 
       // 4️⃣ Save metadata
       const saveRes = await fetch(
@@ -142,7 +161,7 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md">
         <h1 className="text-2xl font-semibold mb-4">Upload your PDF</h1>
 
