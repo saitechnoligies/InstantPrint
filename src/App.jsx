@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayout from "./components/RootLayout";
 import OtpPage from "./pages/OtpPage";
 import UploadPage from "./pages/UploadPage";
-import OptionsPage from "./pages/OptionsPage";
+// import OptionsPage from "./pages/OptionsPage";
 import PaymentPage from "./pages/PaymentPage";
 import SuccessPage from "./pages/SuccessPage";
 
