@@ -27,7 +27,7 @@ function App() {
         },
         {
           path: "/options",
-          element: <OptionsPage />,
+          element: <div>Options</div>,
         },
         {
           path: "/payment/:orderId",
