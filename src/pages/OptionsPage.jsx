@@ -16,7 +16,7 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import worker from "pdfjs-dist/build/pdf.worker.min?url";
 
 pdfjs.GlobalWorkerOptions.workerSrc = worker;
-pdfjs.verbosity = pdfjs.VerbosityLevel.ERRORS;
+// pdfjs.verbosity = pdfjs.VerbosityLevel.ERRORS;
 
 /* ---------------- PAGE RANGE UTILITIES ---------------- */
 
