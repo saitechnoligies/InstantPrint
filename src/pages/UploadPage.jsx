@@ -97,7 +97,7 @@ export default function UploadPage() {
         throw new Error("Invalid upload response");
       }
 
-      console.log("UPLOAD URL:", uploadUrl);
+      // console.log("UPLOAD URL:", uploadUrl);
 
       setProgress(50);
 
@@ -108,19 +108,19 @@ export default function UploadPage() {
         // headers: { "Content-Type": "application/pdf" },
       });
 
-      console.log("UPLOAD STATUS:", uploadRes.status);
+      // console.log("UPLOAD STATUS:", uploadRes.status);
 
       if (!uploadRes.ok) {
         throw new Error("File upload failed");
       }
 
       setProgress(80);
-      console.log({
-        storageKey,
-        fileName: file.name,
-        fileSize: file.size,
-        pageCount,
-      });
+      // console.log({
+      //   storageKey,
+      //   fileName: file.name,
+      //   fileSize: file.size,
+      //   pageCount,
+      // });
 
       // 4️⃣ Save metadata
       try {

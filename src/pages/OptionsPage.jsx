@@ -334,14 +334,14 @@ export default function OptionsPage() {
         pageRangeList: values.pagesType === "all" ? [] : selectedPages || [],
       };
 
-      console.log(payload);
+      // console.log(payload);
 
       const { data } = await api.post(
         `/api/orders/${orderId}/options`,
         payload,
       );
 
-      console.log("Order updated:", data);
+      // console.log("Order updated:", data);
 
       // later navigate to payment page
       navigate(`/payment/${data.orderId}`);
