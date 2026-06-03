@@ -13,7 +13,7 @@
 
 // // //   useEffect(() => {
 // // //     if (isSignedIn && orderId) {
-// // //       fetch(`http://localhost:3000/api/orders/${orderId}/attach-user`, {
+// // //       api.post(`/api/orders/${orderId}/attach-user`, null, {
 // // //         method: "POST",
 // // //         credentials: "include", // 🔥 REQUIRED
 // // //       });
@@ -128,7 +128,7 @@
 // //       if (isSignedIn && user && orderId) {
 // //         const token = await getToken();
 
-// //         await fetch(`http://localhost:3000/api/orders/${orderId}/attach-user`, {
+// //         await api.post(`/api/orders/${orderId}/attach-user`, null, {
 // //           method: "POST",
 // //           headers: {
 // //             Authorization: `Bearer ${token}`,
@@ -247,7 +247,7 @@
 //   useEffect(() => {
 //     const fetchOrder = async () => {
 //       try {
-//         const res = await fetch(`http://localhost:3000/api/orders/${orderId}`);
+//         const res = await api.get(`/api/orders/${orderId}`);
 
 //         const data = await res.json();
 
@@ -271,8 +271,8 @@
 //         try {
 //           const token = await getToken();
 
-//           await fetch(
-//             `http://localhost:3000/api/orders/${orderId}/attach-user`,
+//           await api.post(
+//             `/api/orders/${orderId}/attach-user`,
 //             {
 //               method: "POST",
 //               headers: {
@@ -387,6 +387,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SignInButton, Show, useUser, useAuth } from "@clerk/react";
+import api from "../lib/api";
 
 export default function SuccessPage() {
   const navigate = useNavigate();
@@ -405,11 +406,7 @@ export default function SuccessPage() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/orders/${orderId}`);
-
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.error);
+        const { data } = await api.get(`/api/orders/${orderId}`);
 
         setOrderData(data);
       } catch (err) {
@@ -435,17 +432,15 @@ export default function SuccessPage() {
         try {
           const token = await getToken();
 
-          const res = await fetch(
-            `http://localhost:3000/api/orders/${orderId}/attach-user`,
+          const { data } = await api.post(
+            `/api/orders/${orderId}/attach-user`,
+            null,
             {
-              method: "POST",
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             },
           );
-
-          const data = await res.json();
 
           if (data.isNewlyLinked) {
             setAttachStatus("Order saved to your account ✅");

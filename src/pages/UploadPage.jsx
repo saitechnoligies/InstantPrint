@@ -3,6 +3,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min?url";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/react";
+import api from "../lib/api";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -68,34 +69,29 @@ export default function UploadPage() {
 
     try {
       // 1️⃣ Create order
-      const orderRes = await fetch("http://localhost:3000/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      let orderRes;
+      try {
+        orderRes = await api.post("/api/orders", {
           userId: user?.id || null,
-        }),
-      });
-
-      if (!orderRes.ok) {
-        throw new Error("Failed to create order");
+        });
+      } catch (err) {
+        throw new Error(err.response?.data?.error || "Failed to create order");
       }
 
-      const { orderId } = await orderRes.json();
+      const { orderId } = orderRes.data;
       setProgress(30);
 
       // 2️⃣ Get upload URL
-      const uploadUrlRes = await fetch(
-        `http://localhost:3000/api/orders/${orderId}/upload-url`,
-        { method: "POST" },
-      );
-
-      if (!uploadUrlRes.ok) {
-        throw new Error("Failed to get upload URL");
+      let uploadUrlRes;
+      try {
+        uploadUrlRes = await api.post(`/api/orders/${orderId}/upload-url`);
+      } catch (err) {
+        throw new Error(
+          err.response?.data?.error || "Failed to get upload URL",
+        );
       }
 
-      const { uploadUrl, storageKey } = await uploadUrlRes.json();
+      const { uploadUrl, storageKey } = uploadUrlRes.data;
 
       if (!uploadUrl || !storageKey) {
         throw new Error("Invalid upload response");
@@ -127,23 +123,18 @@ export default function UploadPage() {
       });
 
       // 4️⃣ Save metadata
-      const saveRes = await fetch(
-        `http://localhost:3000/api/orders/${orderId}/file`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            storageKey,
-            fileName: file.name,
-            fileSize: file.size,
-            pageCount,
-            mimeType: file.type,
-          }),
-        },
-      );
-
-      if (!saveRes.ok) {
-        throw new Error("Failed to save file metadata");
+      try {
+        await api.post(`/api/orders/${orderId}/file`, {
+          storageKey,
+          fileName: file.name,
+          fileSize: file.size,
+          pageCount,
+          mimeType: file.type,
+        });
+      } catch (err) {
+        throw new Error(
+          err.response?.data?.error || "Failed to save file metadata",
+        );
       }
 
       setProgress(100);

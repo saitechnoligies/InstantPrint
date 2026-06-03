@@ -8,6 +8,7 @@ import React, {
 import { useLocation, useNavigate } from "react-router-dom";
 import { Document, Page, pdfjs } from "react-pdf";
 import { useForm, useWatch } from "react-hook-form";
+import api from "../lib/api";
 
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -335,23 +336,10 @@ export default function OptionsPage() {
 
       console.log(payload);
 
-      const res = await fetch(
-        `http://localhost:3000/api/orders/${orderId}/options`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        },
+      const { data } = await api.post(
+        `/api/orders/${orderId}/options`,
+        payload,
       );
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to update options");
-      }
-
-      const data = await res.json();
 
       console.log("Order updated:", data);
 
@@ -359,7 +347,7 @@ export default function OptionsPage() {
       navigate(`/payment/${data.orderId}`);
     } catch (err) {
       console.error(err);
-      setApiError(err.message);
+      setApiError(err.response?.data?.error || "Failed to update options");
     } finally {
       setLoading(false);
     }

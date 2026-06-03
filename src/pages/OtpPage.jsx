@@ -1,6 +1,7 @@
 // pages/OtpPage.jsx
 
 import React, { useState } from "react";
+import api from "../lib/api";
 
 export default function OtpPage() {
   const [otp, setOtp] = useState("");
@@ -10,25 +11,13 @@ export default function OtpPage() {
     try {
       setLoading(true);
 
-      const res = await fetch("http://localhost:3000/api/orders/verify-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ otp }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error);
-      }
+      const { data } = await api.post("/api/orders/verify-otp", { otp });
 
       // 🔥 DOWNLOAD FILE
       window.open(data.fileUrl, "_blank");
 
     } catch (err) {
-      alert(err.message);
+      alert(err.response?.data?.error || err.message);
     } finally {
       setLoading(false);
     }

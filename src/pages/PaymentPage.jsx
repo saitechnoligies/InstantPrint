@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
-const BASE = "http://localhost:3000";
+import api from "../lib/api";
 
 export default function PaymentPage() {
   const { orderId } = useParams();
@@ -15,16 +14,11 @@ export default function PaymentPage() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`${BASE}/api/orders/${orderId}/checkout`);
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.error || "Failed to fetch order");
-        }
+        const { data } = await api.get(`/api/orders/${orderId}/checkout`);
 
         setOrder(data);
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.error || "Failed to fetch order");
       } finally {
         setLoading(false);
       }
@@ -34,26 +28,20 @@ export default function PaymentPage() {
   }, [orderId]);
 
   const verifyPayment = async (response) => {
-    const res = await fetch(`${BASE}/api/verify-payment`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    try {
+      const { data } = await api.post("/api/verify-payment", {
         orderId,
         razorpay_payment_id: response.razorpay_payment_id,
         razorpay_order_id: response.razorpay_order_id,
         razorpay_signature: response.razorpay_signature,
-      }),
-    });
+      });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || "Payment verification failed");
+      return data;
+    } catch (err) {
+      throw new Error(
+        err.response?.data?.error || "Payment verification failed",
+      );
     }
-
-    return data;
   };
 
   const handlePayment = async () => {
@@ -67,18 +55,16 @@ export default function PaymentPage() {
         throw new Error("Razorpay checkout could not be loaded");
       }
 
-      const res = await fetch(`${BASE}/api/create-order`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ orderId }),
-      });
-
-      const paymentData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(paymentData.error || "Failed to create payment order");
+      let paymentData;
+      try {
+        const { data } = await api.post("/api/create-order", {
+          orderId,
+        });
+        paymentData = data;
+      } catch (err) {
+        throw new Error(
+          err.response?.data?.error || "Failed to create payment order",
+        );
       }
 
       const razorpay = new window.Razorpay({
@@ -116,7 +102,7 @@ export default function PaymentPage() {
 
       razorpay.open();
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.error || err.message);
       setProcessing(false);
     }
   };
