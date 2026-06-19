@@ -7,10 +7,10 @@ import UploadPage from "./pages/UploadPage";
 import OptionsPage from "./pages/OptionsPage";
 import PaymentPage from "./pages/PaymentPage";
 import SuccessPage from "./pages/SuccessPage";
-
+import OrdersPage from "./pages/OrdersPage";
 import "./App.css";
 import HomePage from "./pages/HomePage";
-
+import AdminPage from "./pages/AdminPage";
 function App() {
   const browserRouterObj = createBrowserRouter([
     {
@@ -41,6 +41,14 @@ function App() {
         {
           path: "/otp",
           element: <OtpPage />,
+        },
+        {
+          path:"/orders",
+          element: <OrdersPage />
+        },
+        {
+          path: "/admin",
+          element: <AdminPage />,
         },
       ],
     },
