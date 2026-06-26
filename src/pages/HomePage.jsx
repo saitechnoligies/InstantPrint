@@ -25,7 +25,7 @@ export default function HomePage() {
 
         {/* 2. ADDITIONAL CONTENT MARKETING LAYERS */}
         <main>
-          <DashboardShowcase />
+          {/* <DashboardShowcase /> */}
           <HowItWorks />
           <Features />
           <Printers />

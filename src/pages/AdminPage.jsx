@@ -6,22 +6,28 @@ import {
   MonitorSmartphone, Users, TrendingUp, Settings, Printer, Loader2 
 } from "lucide-react";
 
-// Import your modular tab components
+// 🔥 Import all your modular tab components
 import OverviewTab from "../components/admin/OverviewTab";
-// import PrintJobsTab from "../components/admin/PrintJobsTab"; 
-// import ActiveOTPsTab from "../components/admin/ActiveOTPsTab";
+import PrintJobsTab from "../components/admin/PrintJobsTab"; 
+import ActiveOtpsTab from "../components/admin/ActiveOtpsTab";
+import KiosksTab from "../components/admin/KiosksTab";
+import UsersTab from "../components/admin/UsersTab";
+import RevenueTab from "../components/admin/RevenueTab";
+import SettingsTab from "../components/admin/SettingsTab";
 
 export default function AdminPage() {
   const navigate = useNavigate();
   const { user, isLoaded } = useUser();
   const [activeTab, setActiveTab] = useState("overview");
-if (!isLoaded) {
+
+  if (!isLoaded) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#0C0B0A]">
         <Loader2 className="animate-spin text-[#c9a66b]" size={32} />
       </div>
     );
   }
+
   // Protect the route
   if (user?.primaryEmailAddress?.emailAddress !== "pittalacharanchandu@gmail.com") {
     navigate("/");
@@ -48,7 +54,7 @@ if (!isLoaded) {
         <div className="p-6 pb-2">
           <button 
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-xs font-semibold tracking-wider text-[#a3a098] hover:text-white transition-colors mb-6"
+            className="flex items-center gap-2 text-xs font-semibold tracking-wider text-[#a3a098] hover:text-white transition-colors mb-6 cursor-pointer"
           >
             <ArrowLeft size={14} /> Back to Home
           </button>
@@ -73,7 +79,7 @@ if (!isLoaded) {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                   isActive 
                     ? "bg-[#c9a66b]/10 text-[#c9a66b] border border-[#c9a66b]/20" 
                     : "text-[#a3a098] hover:text-white hover:bg-white/5 border border-transparent"
@@ -123,16 +129,23 @@ if (!isLoaded) {
                   className="bg-[#1e1c1a] border border-white/10 rounded-lg py-2 pl-4 pr-10 text-sm text-white focus:border-[#c9a66b]/50 focus:outline-none w-64"
                 />
               </div>
-              <button className="bg-[#c9a66b] text-[#1C1C18] px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-[#d9b96a] transition-colors">
+              <button className="bg-[#c9a66b] text-[#1C1C18] px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-[#d9b96a] transition-colors cursor-pointer">
                 ↓ Export
               </button>
             </div>
           </div>
 
-          {/* Dynamic Tab Rendering */}
-          {activeTab === "overview" && <OverviewTab />}
-          {activeTab === "jobs" && <div className="text-[#a3a098]">Print Jobs Component goes here...</div>}
-          {/* Add other tabs here */}
+          {/* 🔥 Dynamic Tab Rendering */}
+          <div className="animate-in fade-in zoom-in-95 duration-300">
+            {activeTab === "overview" && <OverviewTab />}
+            {activeTab === "jobs" && <PrintJobsTab />}
+            {activeTab === "otps" && <ActiveOtpsTab />}
+            {activeTab === "kiosks" && <KiosksTab />}
+            {activeTab === "users" && <UsersTab />}
+            {activeTab === "revenue" && <RevenueTab />}
+            {activeTab === "settings" && <SettingsTab />}
+          </div>
+
         </div>
       </main>
     </div>
